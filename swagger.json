@@ -1,0 +1,4 @@
+Warning: Required @OA\PathItem() not found
+Warning: Required @OA\Info() not found
+openapi: 3.0.0
+

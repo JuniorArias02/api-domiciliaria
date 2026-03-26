@@ -1,0 +1,3150 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "API Domiciliaria Médica",
+        "description": "Documentación oficial de la API para el sistema de atención domiciliaria",
+        "contact": {
+            "email": "admin@domiciliaria.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "API Server"
+        }
+    ],
+    "paths": {
+        "/api/v1/aseguradoras": {
+            "get": {
+                "tags": [
+                    "Aseguradoras"
+                ],
+                "summary": "Listar todas las aseguradoras",
+                "operationId": "171657b3b418958042d9250ca1767805",
+                "responses": {
+                    "200": {
+                        "description": "Listado de aseguradoras"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Aseguradoras"
+                ],
+                "summary": "Crear una nueva aseguradora",
+                "operationId": "b23f224291612a33cfe14314591e8b4e",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "Aseguradora SURA"
+                                    },
+                                    "codigo_habilitacion": {
+                                        "type": "string",
+                                        "example": "HAB1234"
+                                    },
+                                    "activa": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Aseguradora creada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/aseguradoras/{id}": {
+            "put": {
+                "tags": [
+                    "Aseguradoras"
+                ],
+                "summary": "Actualizar una aseguradora",
+                "operationId": "c2193047256b83d9dfeda5bb909c8e57",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la aseguradora",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "Nueva SURA"
+                                    },
+                                    "activa": {
+                                        "type": "integer",
+                                        "example": 0
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Aseguradora actualizada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Aseguradoras"
+                ],
+                "summary": "Eliminar una aseguradora",
+                "operationId": "53f64800bda110fdb7d475646a3d7cb3",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la aseguradora",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Aseguradora eliminada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/auth/login": {
+            "post": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Iniciar sesión y obtener el token JWT",
+                "description": "Recibe email y password, y si el usuario está activo, retorna un token persistente de la sesión.",
+                "operationId": "cb10ac4d2d2298c768e0f31eda76e09b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "admin@domiciliaria.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Token JWT generado correctamente"
+                    },
+                    "401": {
+                        "description": "Credenciales inválidas"
+                    },
+                    "403": {
+                        "description": "Usuario inactivo"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/me": {
+            "get": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Obtener perfil del usuario",
+                "description": "Consulta quién es el usuario autenticado usando el token alojado en los headers.",
+                "operationId": "87a496291ca129e4bed7bdf5b182aa6c",
+                "responses": {
+                    "200": {
+                        "description": "Datos del usuario extraídos satisfactoriamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/barrios": {
+            "get": {
+                "tags": [
+                    "Barrios"
+                ],
+                "summary": "Listar todos los barrios",
+                "operationId": "f333581ccc76e2d5bed57fa7081de3e7",
+                "responses": {
+                    "200": {
+                        "description": "Listado de barrios"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Barrios"
+                ],
+                "summary": "Crear nuevo barrio",
+                "operationId": "7e210c71f5a6b560cda1681e46d57c5c",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre",
+                                    "id_comuna"
+                                ],
+                                "properties": {
+                                    "id_comuna": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "Poblado"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Barrio creado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/barrios/{id}": {
+            "put": {
+                "tags": [
+                    "Barrios"
+                ],
+                "summary": "Actualizar un barrio",
+                "operationId": "dad122f378b7a1572d7b460818dc141d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del barrio",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre"
+                                ],
+                                "properties": {
+                                    "id_comuna": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "Laureles"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Barrio actualizado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Barrios"
+                ],
+                "summary": "Eliminar un barrio",
+                "operationId": "f8541975b39402b35757ddaa0a5e5fa1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del barrio",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Barrio eliminado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/cargos": {
+            "get": {
+                "tags": [
+                    "Cargos"
+                ],
+                "summary": "Listar todos los cargos",
+                "operationId": "1ea15c14c36862a57fe07ab5b03276e8",
+                "responses": {
+                    "200": {
+                        "description": "Listado de cargos"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Cargos"
+                ],
+                "summary": "Crear un nuevo cargo",
+                "operationId": "24b3ad56dc55cc97ec560fc32910e5cb",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "Administrador"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Cargo creado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/cargos/{id}": {
+            "put": {
+                "tags": [
+                    "Cargos"
+                ],
+                "summary": "Actualizar un cargo",
+                "operationId": "191b2eb71558ceedaa21a5ee4159e9e6",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del cargo",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "Supervisor"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Cargo actualizado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Cargos"
+                ],
+                "summary": "Eliminar un cargo",
+                "operationId": "0cea23e39cad574503bbf4e7934f133c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del cargo",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cargo eliminado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/comunas": {
+            "get": {
+                "tags": [
+                    "Comunas"
+                ],
+                "summary": "Listar todas las comunas",
+                "operationId": "819231fa3f553a10478dca469258bda7",
+                "responses": {
+                    "200": {
+                        "description": "Listado de comunas"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Comunas"
+                ],
+                "summary": "Crear nueva comuna",
+                "operationId": "4ccc2de0915efc8b253cf883356ea750",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre",
+                                    "id_zona"
+                                ],
+                                "properties": {
+                                    "id_zona": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "Comuna 1"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Comuna creada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/comunas/{id}": {
+            "put": {
+                "tags": [
+                    "Comunas"
+                ],
+                "summary": "Actualizar una comuna",
+                "operationId": "53f9d140a714ca231d36fe927265f53d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la comuna",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre"
+                                ],
+                                "properties": {
+                                    "id_zona": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "Comuna 2"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Comuna actualizada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Comunas"
+                ],
+                "summary": "Eliminar una comuna",
+                "operationId": "84fbde73a2ad4900728e0050a2b3809b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la comuna",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Comuna eliminada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/cuidadores": {
+            "get": {
+                "tags": [
+                    "Cuidadores"
+                ],
+                "summary": "Listar todos los cuidadores",
+                "operationId": "1b1c682e450f41632e7caa7401230738",
+                "responses": {
+                    "200": {
+                        "description": "Listado de cuidadores"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Cuidadores"
+                ],
+                "summary": "Crear nuevo cuidador",
+                "operationId": "d169a6305e84b5c9d40f43010c6c95b4",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre_completo",
+                                    "id_paciente"
+                                ],
+                                "properties": {
+                                    "id_paciente": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "nombre_completo": {
+                                        "type": "string",
+                                        "example": "Andrea Gomez"
+                                    },
+                                    "parentesco": {
+                                        "type": "string",
+                                        "example": "Hija"
+                                    },
+                                    "telefono": {
+                                        "type": "string",
+                                        "example": "3009998877"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "andrea@ejemplo.com"
+                                    },
+                                    "es_principal": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "tipo_auxiliar": {
+                                        "type": "string",
+                                        "example": "Enfermera"
+                                    },
+                                    "horas_diarias": {
+                                        "type": "integer",
+                                        "example": 8
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Cuidador creado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/cuidadores/{id}": {
+            "put": {
+                "tags": [
+                    "Cuidadores"
+                ],
+                "summary": "Actualizar un cuidador",
+                "operationId": "67c7216b6bcc229164db78a0e67c8a77",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del cuidador",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "telefono": {
+                                        "type": "string",
+                                        "example": "3105554433"
+                                    },
+                                    "es_principal": {
+                                        "type": "integer",
+                                        "example": 0
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Cuidador actualizado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Cuidadores"
+                ],
+                "summary": "Eliminar un cuidador",
+                "operationId": "0990123c25bfeba4c389385f4ab7d160",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del cuidador",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cuidador eliminado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/detalle-solicitudes-equipos": {
+            "get": {
+                "tags": [
+                    "Detalle Solicitudes Equipos"
+                ],
+                "summary": "Listar todos los detalles de solicitudes de equipos",
+                "operationId": "2e82faf82fadded644c725c9235e0a8f",
+                "responses": {
+                    "200": {
+                        "description": "Listado de detalles"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Detalle Solicitudes Equipos"
+                ],
+                "summary": "Crear nuevo detalle para solicitud",
+                "operationId": "3f8448ad6de9667d69c296be4ed86401",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id_solicitud",
+                                    "id_equipo"
+                                ],
+                                "properties": {
+                                    "id_solicitud": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "id_equipo": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "cantidad": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "observacion": {
+                                        "type": "string",
+                                        "example": "Cama hospitalaria bimanual"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Detalle creado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/detalle-solicitudes-equipos/{id}": {
+            "put": {
+                "tags": [
+                    "Detalle Solicitudes Equipos"
+                ],
+                "summary": "Actualizar un detalle",
+                "operationId": "a5c5d817aa8ef20b31cd7a7abc2910ae",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del detalle",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "cantidad": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "observacion": {
+                                        "type": "string",
+                                        "example": "Se incrementa la cantidad requerida"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Detalle actualizado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Detalle Solicitudes Equipos"
+                ],
+                "summary": "Eliminar un detalle",
+                "operationId": "a1be9d708705a519a27cc2273c0b91e9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del detalle",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detalle eliminado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/especialidades": {
+            "get": {
+                "tags": [
+                    "Especialidades"
+                ],
+                "summary": "Listar todas las especialidades médicas",
+                "operationId": "442bbbefd14888806f1707baf3db3b5c",
+                "responses": {
+                    "200": {
+                        "description": "Listado de especialidades"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Especialidades"
+                ],
+                "summary": "Crear nueva especialidad médica",
+                "operationId": "8d4d43d7b30a471d8b2268583f5dacf5",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "Fisioterapia"
+                                    },
+                                    "abreviatura": {
+                                        "type": "string",
+                                        "example": "FISIO"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Especialidad creada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/especialidades/{id}": {
+            "put": {
+                "tags": [
+                    "Especialidades"
+                ],
+                "summary": "Actualizar una especialidad",
+                "operationId": "24d7e1bff646e80cdbcc03a3ddd2fca3",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la especialidad",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "Fisioterapia Domiciliaria"
+                                    },
+                                    "abreviatura": {
+                                        "type": "string",
+                                        "example": "FISIO-D"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Especialidad actualizada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Especialidades"
+                ],
+                "summary": "Eliminar una especialidad",
+                "operationId": "a1242ff05658ecc83a7b1a921202fd60",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la especialidad",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Especialidad eliminada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/laboratorios": {
+            "get": {
+                "tags": [
+                    "Laboratorios"
+                ],
+                "summary": "Listar todas las solicitudes de laboratorio",
+                "operationId": "6d3425269bc1fd8e09cd46eac69f9d6e",
+                "responses": {
+                    "200": {
+                        "description": "Listado de laboratorios"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Laboratorios"
+                ],
+                "summary": "Crear nueva solicitud de laboratorio",
+                "operationId": "93d90eed36f21b9737f45295274872fe",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id_paciente",
+                                    "fecha_solicitud"
+                                ],
+                                "properties": {
+                                    "id_paciente": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "id_orden_asociada": {
+                                        "type": "integer",
+                                        "example": 4
+                                    },
+                                    "id_personal_toma": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "id_usuario_solicita": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "fecha_solicitud": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-10-20"
+                                    },
+                                    "fecha_toma_programada": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2026-10-22 07:00:00"
+                                    },
+                                    "estado": {
+                                        "type": "string",
+                                        "example": "PENDIENTE"
+                                    },
+                                    "observaciones": {
+                                        "type": "string",
+                                        "example": "Toma en ayunas"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Laboratorio creado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/laboratorios/{id}": {
+            "put": {
+                "tags": [
+                    "Laboratorios"
+                ],
+                "summary": "Actualizar una solicitud de laboratorio",
+                "operationId": "bb6ba12654269754939ddaea8f866406",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del laboratorio",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "estado": {
+                                        "type": "string",
+                                        "example": "REALIZADO"
+                                    },
+                                    "fecha_toma_real": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2026-10-22 08:15:00"
+                                    },
+                                    "confirmacion_toma": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "observaciones": {
+                                        "type": "string",
+                                        "example": "Toma realizada sin inconvenientes"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Laboratorio actualizado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Laboratorios"
+                ],
+                "summary": "Eliminar una solicitud de laboratorio",
+                "operationId": "bccde256417ddb3ad179e0c0c8ee8ad8",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del laboratorio",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Laboratorio eliminado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/ordenes-medicas": {
+            "get": {
+                "tags": [
+                    "Ordenes Médicas"
+                ],
+                "summary": "Listar todas las ordenes médicas",
+                "operationId": "f486e96c7711cf1f0faec26be461bb28",
+                "responses": {
+                    "200": {
+                        "description": "Listado de órdenes médicas"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Ordenes Médicas"
+                ],
+                "summary": "Crear nueva orden médica",
+                "operationId": "3d02f4d35b216c60008bdd70f0aea379",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id_paciente",
+                                    "id_especialidad",
+                                    "fecha_orden"
+                                ],
+                                "properties": {
+                                    "id_paciente": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "id_especialidad": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "id_personal_ordena": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "fecha_orden": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-06-01"
+                                    },
+                                    "numero_sesiones": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "frecuencia_dias": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "numero_mipres": {
+                                        "type": "string",
+                                        "example": "MP-987654321"
+                                    },
+                                    "observacion": {
+                                        "type": "string",
+                                        "example": "Terapia física a domicilio"
+                                    },
+                                    "estado": {
+                                        "type": "string",
+                                        "example": "VIGENTE"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Orden médica creada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/ordenes-medicas/{id}": {
+            "put": {
+                "tags": [
+                    "Ordenes Médicas"
+                ],
+                "summary": "Actualizar una orden médica",
+                "operationId": "c366777babb95c740a2192cadd72ff6b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la orden médica",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "estado": {
+                                        "type": "string",
+                                        "example": "EJECUTADA"
+                                    },
+                                    "numero_sesiones": {
+                                        "type": "integer",
+                                        "example": 12
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Orden médica actualizada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Ordenes Médicas"
+                ],
+                "summary": "Eliminar una orden médica",
+                "operationId": "6afbb2dcc89e3198ae4ec07fc777c451",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la orden médica",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Orden médica eliminada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/paciente-diagnosticos": {
+            "get": {
+                "tags": [
+                    "Paciente Diagnósticos"
+                ],
+                "summary": "Listar todos los diagnósticos de pacientes",
+                "operationId": "445a19675bab80e63bab1c1f0c27ab14",
+                "responses": {
+                    "200": {
+                        "description": "Listado de diagnósticos"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Paciente Diagnósticos"
+                ],
+                "summary": "Asignar nuevo diagnóstico a un paciente",
+                "operationId": "2422e5ba70d4051787e4df930efa4a43",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id_paciente",
+                                    "codigo_cie10"
+                                ],
+                                "properties": {
+                                    "id_paciente": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "codigo_cie10": {
+                                        "type": "string",
+                                        "example": "A001"
+                                    },
+                                    "tipo_diagnostico": {
+                                        "description": "Por defecto es DOMICILIARIO",
+                                        "type": "string",
+                                        "example": "DOMICILIARIO"
+                                    },
+                                    "es_principal": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "fecha_registro": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-04-10"
+                                    },
+                                    "observacion": {
+                                        "type": "string",
+                                        "example": "Diagnóstico crónico"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Diagnóstico registrado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/paciente-diagnosticos/{id_paciente}/{codigo_cie10}/{tipo_diagnostico}": {
+            "put": {
+                "tags": [
+                    "Paciente Diagnósticos"
+                ],
+                "summary": "Actualizar un diagnóstico (Llave compuesta)",
+                "operationId": "ea12f9cf9a1389a9ff8b872e243b267d",
+                "parameters": [
+                    {
+                        "name": "id_paciente",
+                        "in": "path",
+                        "description": "ID del paciente",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "codigo_cie10",
+                        "in": "path",
+                        "description": "Código CIE10",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "tipo_diagnostico",
+                        "in": "path",
+                        "description": "Tipo Diagnóstico",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "es_principal": {
+                                        "type": "integer",
+                                        "example": 0
+                                    },
+                                    "observacion": {
+                                        "type": "string",
+                                        "example": "Se modificó la observación"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Diagnóstico actualizado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Paciente Diagnósticos"
+                ],
+                "summary": "Eliminar un diagnóstico (Llave compuesta)",
+                "operationId": "ce947617a4abf85312d5d6124172b90b",
+                "parameters": [
+                    {
+                        "name": "id_paciente",
+                        "in": "path",
+                        "description": "ID del paciente",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "codigo_cie10",
+                        "in": "path",
+                        "description": "Código CIE10",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "tipo_diagnostico",
+                        "in": "path",
+                        "description": "Tipo Diagnóstico",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Diagnóstico eliminado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/pacientes": {
+            "post": {
+                "tags": [
+                    "Pacientes"
+                ],
+                "summary": "Crear un nuevo paciente",
+                "operationId": "a28ae713841fc792e3873e40ae91c85a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre_completo",
+                                    "identificacion",
+                                    "sexo",
+                                    "tipo_documento",
+                                    "fecha_ingreso",
+                                    "fecha_nacimiento",
+                                    "id_aseguradora",
+                                    "direccion"
+                                ],
+                                "properties": {
+                                    "nombre_completo": {
+                                        "type": "string",
+                                        "example": "Juan Perez"
+                                    },
+                                    "identificacion": {
+                                        "type": "string",
+                                        "example": "123456789"
+                                    },
+                                    "sexo": {
+                                        "type": "string",
+                                        "example": "M"
+                                    },
+                                    "tipo_documento": {
+                                        "type": "string",
+                                        "example": "CC"
+                                    },
+                                    "fecha_ingreso": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-03-25"
+                                    },
+                                    "fecha_nacimiento": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "1990-01-01"
+                                    },
+                                    "id_aseguradora": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "direccion": {
+                                        "type": "string",
+                                        "example": "Calle 123 #45-67"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Paciente creado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/pacientes/{id}": {
+            "put": {
+                "tags": [
+                    "Pacientes"
+                ],
+                "summary": "Actualizar todos los datos de un paciente",
+                "operationId": "b5c30779ef065fd5ebfb315cba885aa9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del paciente",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nombre_completo": {
+                                        "type": "string",
+                                        "example": "Juan Perez Actualizado"
+                                    },
+                                    "telefono": {
+                                        "type": "string",
+                                        "example": "3001234567"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Paciente actualizado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Pacientes"
+                ],
+                "summary": "Eliminar un paciente",
+                "operationId": "4879ef30a17b7123ff7a39221f510cb3",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del paciente",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paciente eliminado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/pacientes/{id}/ubicacion": {
+            "patch": {
+                "tags": [
+                    "Pacientes"
+                ],
+                "summary": "Actualizar la ubicación de un paciente (latitud, longitud, url de google maps)",
+                "operationId": "145df5dd61b1f49f6666febef48f43eb",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del paciente",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "latitud",
+                                    "longitud",
+                                    "url_google_maps"
+                                ],
+                                "properties": {
+                                    "latitud": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 4.60971
+                                    },
+                                    "longitud": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": -74.08175
+                                    },
+                                    "url_google_maps": {
+                                        "type": "string",
+                                        "example": "https://maps.google.com/?q=4.6097100,-74.0817500"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Ubicación actualizada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/personal": {
+            "get": {
+                "tags": [
+                    "Personal"
+                ],
+                "summary": "Listar todo el personal",
+                "operationId": "b32b3051236fd744682bc3a8c0f6892b",
+                "responses": {
+                    "200": {
+                        "description": "Listado de personal"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Personal"
+                ],
+                "summary": "Crear nuevo personal",
+                "operationId": "468fe24d701c71ab69affbc1842320fc",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre_completo",
+                                    "numero_documento",
+                                    "tipo_documento",
+                                    "id_cargo"
+                                ],
+                                "properties": {
+                                    "id_cargo": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "id_especialidad": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "nombre_completo": {
+                                        "type": "string",
+                                        "example": "Maria Rodriguez"
+                                    },
+                                    "numero_documento": {
+                                        "type": "string",
+                                        "example": "1020304050"
+                                    },
+                                    "tipo_documento": {
+                                        "type": "string",
+                                        "example": "CC"
+                                    },
+                                    "tarjeta_profesional": {
+                                        "type": "string",
+                                        "example": "TP-98765"
+                                    },
+                                    "telefono": {
+                                        "type": "string",
+                                        "example": "3109876543"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "maria@ejemplo.com"
+                                    },
+                                    "estado": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Personal creado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/personal/{id}": {
+            "put": {
+                "tags": [
+                    "Personal"
+                ],
+                "summary": "Actualizar datos de personal",
+                "operationId": "898e0f802d3c1bc0bfea306f5a31669c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del personal",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "telefono": {
+                                        "type": "string",
+                                        "example": "3201112233"
+                                    },
+                                    "estado": {
+                                        "type": "integer",
+                                        "example": 0
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Personal actualizado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Personal"
+                ],
+                "summary": "Eliminar personal",
+                "operationId": "cddd3e8d13a11b097934354090306fee",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del personal",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Personal eliminado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/solicitudes-equipos": {
+            "get": {
+                "tags": [
+                    "Solicitudes Equipos"
+                ],
+                "summary": "Listar todas las solicitudes de equipos",
+                "operationId": "7c54724cff2f43a894a7f05d4db330f7",
+                "responses": {
+                    "200": {
+                        "description": "Listado de solicitudes"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Solicitudes Equipos"
+                ],
+                "summary": "Crear nueva solicitud de equipo",
+                "operationId": "47aa0f59b6e5f1e1da557483caebd7ad",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id_paciente"
+                                ],
+                                "properties": {
+                                    "id_paciente": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "modalidad": {
+                                        "type": "string",
+                                        "example": "ALQUILER"
+                                    },
+                                    "tiempo_requerido": {
+                                        "type": "string",
+                                        "example": "1 MES"
+                                    },
+                                    "estado": {
+                                        "type": "string",
+                                        "example": "PENDIENTE"
+                                    },
+                                    "fecha_solicitud": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-06-01"
+                                    },
+                                    "observaciones": {
+                                        "type": "string",
+                                        "example": "Se necesita oxigeno urgente"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Solicitud creada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/solicitudes-equipos/{id}": {
+            "put": {
+                "tags": [
+                    "Solicitudes Equipos"
+                ],
+                "summary": "Actualizar una solicitud de equipo",
+                "operationId": "f77ed1c71000cc0ca2cc08fbe4fc242d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la solicitud",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "estado": {
+                                        "type": "string",
+                                        "example": "APROBADO"
+                                    },
+                                    "id_usuario_gestiona": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "fecha_entrega": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-06-05"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Solicitud actualizada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Solicitudes Equipos"
+                ],
+                "summary": "Eliminar una solicitud de equipo",
+                "operationId": "623de7833d7c91573e1fec32128d1343",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la solicitud",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Solicitud eliminada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/telexperticias": {
+            "get": {
+                "tags": [
+                    "Telexperticias"
+                ],
+                "summary": "Listar todas las telexperticias",
+                "operationId": "a647dd70e6e42c77652193cd54ee18ef",
+                "responses": {
+                    "200": {
+                        "description": "Listado de telexperticias"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Telexperticias"
+                ],
+                "summary": "Crear nueva telexperticia",
+                "operationId": "9c15688279ff6b457857e9aa8ba8f05b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id_paciente",
+                                    "id_especialidad",
+                                    "fecha_solicitud"
+                                ],
+                                "properties": {
+                                    "id_paciente": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "id_especialidad": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "id_usuario_solicita": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "fecha_solicitud": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-11-05"
+                                    },
+                                    "frecuencia_dias": {
+                                        "type": "integer",
+                                        "example": 15
+                                    },
+                                    "estado": {
+                                        "type": "string",
+                                        "example": "SOLICITADA"
+                                    },
+                                    "observaciones": {
+                                        "type": "string",
+                                        "example": "Consulta de seguimiento por especialista en neurología"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Telexperticia creada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/telexperticias/{id}": {
+            "put": {
+                "tags": [
+                    "Telexperticias"
+                ],
+                "summary": "Actualizar una telexperticia",
+                "operationId": "a0ab9f3089a90d487a722ee1eaf55454",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la telexperticia",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "estado": {
+                                        "type": "string",
+                                        "example": "REALIZADA"
+                                    },
+                                    "frecuencia_dias": {
+                                        "type": "integer",
+                                        "example": 30
+                                    },
+                                    "observaciones": {
+                                        "type": "string",
+                                        "example": "Especialista recomienda continuar tratamiento"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Telexperticia actualizada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Telexperticias"
+                ],
+                "summary": "Eliminar una telexperticia",
+                "operationId": "b547a2243ee51233ce70ad452ad83800",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la telexperticia",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Telexperticia eliminada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/tutelas": {
+            "get": {
+                "tags": [
+                    "Tutelas"
+                ],
+                "summary": "Listar todas las tutelas",
+                "operationId": "45a695fecb89fce907a78cd5f5ae2463",
+                "responses": {
+                    "200": {
+                        "description": "Listado de tutelas"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Tutelas"
+                ],
+                "summary": "Crear nueva tutela",
+                "operationId": "fa6f75e44d7f209cb6763ab6dfc8a13b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id_paciente",
+                                    "numero_tutela"
+                                ],
+                                "properties": {
+                                    "id_paciente": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "numero_tutela": {
+                                        "type": "string",
+                                        "example": "T-1234567"
+                                    },
+                                    "fecha_tutela": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-03-25"
+                                    },
+                                    "prestacion_autorizada": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "es_permanente": {
+                                        "type": "integer",
+                                        "example": 0
+                                    },
+                                    "duracion_dias": {
+                                        "type": "integer",
+                                        "example": 30
+                                    },
+                                    "observaciones": {
+                                        "type": "string",
+                                        "example": "Requiere atención especial"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Tutela creada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/tutelas/{id}": {
+            "put": {
+                "tags": [
+                    "Tutelas"
+                ],
+                "summary": "Actualizar una tutela",
+                "operationId": "a59d28a0b670f983bb2dc1e36efc4ee1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la tutela",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "prestacion_autorizada": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "duracion_dias": {
+                                        "type": "integer",
+                                        "example": 60
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tutela actualizada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Tutelas"
+                ],
+                "summary": "Eliminar una tutela",
+                "operationId": "4db86b7f62df28cc73524d9a7e5e13e5",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la tutela",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tutela eliminada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/usuarios": {
+            "post": {
+                "tags": [
+                    "Usuarios"
+                ],
+                "summary": "Crear un nuevo usuario",
+                "description": "Crea un usuario en el sistema. Requiere token de autenticación (JWT).",
+                "operationId": "b508dc9da63eaa8d2b83eac3752c1aec",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre_completo",
+                                    "email",
+                                    "password_hash",
+                                    "id_rol"
+                                ],
+                                "properties": {
+                                    "nombre_completo": {
+                                        "type": "string",
+                                        "example": "Dr. House"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "dr.house@hospital.com"
+                                    },
+                                    "password_hash": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "secreta123"
+                                    },
+                                    "id_rol": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "estado": {
+                                        "description": "Opcional. 1 por defecto",
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Usuario creado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Usuario creado exitosamente"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error de validación o parámetros faltantes"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/usuarios/{id}/desactivar": {
+            "put": {
+                "tags": [
+                    "Usuarios"
+                ],
+                "summary": "Desactivar un usuario",
+                "description": "Cambia el estado de un usuario a inactivo recibiendo su ID en la URL. Requiere JWT.",
+                "operationId": "532ab105bc101229b11ce22701e6ddcf",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del usuario a desactivar",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Usuario desactivado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Usuario desactivado exitosamente"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "El usuario no existe o surgió un error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/usuarios/contrasena": {
+            "put": {
+                "tags": [
+                    "Usuarios"
+                ],
+                "summary": "Actualizar contraseña",
+                "description": "Permite al usuario autenticado cambiar su contraseña sabiendo la actual. Requiere JWT.",
+                "operationId": "e07c92465c721b656ac77b20589feda8",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "contrasena_actual",
+                                    "nueva_contrasena"
+                                ],
+                                "properties": {
+                                    "contrasena_actual": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "secreta123"
+                                    },
+                                    "nueva_contrasena": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "claveSuperSegura456"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Contraseña actualizada exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Contraseña actualizada exitosamente"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Contraseña actual incorrecta o falta de datos"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/usuarios/perfil": {
+            "put": {
+                "tags": [
+                    "Usuarios"
+                ],
+                "summary": "Actualizar perfil del usuario",
+                "description": "Actualiza la información personal del usuario que hace la solicitud. Requiere JWT.",
+                "operationId": "88e12df850b3e1ab05cf8dbf8649d32b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nombre_completo": {
+                                        "type": "string",
+                                        "example": "Doctor Strange"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "dr.strange@hospital.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Perfil actualizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Perfil actualizado exitosamente"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error de validación o datos faltantes"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/visitas-domiciliarias": {
+            "get": {
+                "tags": [
+                    "Visitas Domiciliarias"
+                ],
+                "summary": "Listar todas las visitas domiciliarias",
+                "operationId": "b66db87cc141403b2004880133676e4f",
+                "responses": {
+                    "200": {
+                        "description": "Listado de visitas"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Visitas Domiciliarias"
+                ],
+                "summary": "Programar nueva visita domiciliaria",
+                "operationId": "2e82c3659530ca9c18181b70873735b4",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id_paciente",
+                                    "id_personal",
+                                    "id_especialidad",
+                                    "fecha_programada"
+                                ],
+                                "properties": {
+                                    "id_orden_asociada": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "id_paciente": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "id_personal": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "id_especialidad": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "id_usuario_programa": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "fecha_programada": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2026-10-15 08:30:00"
+                                    },
+                                    "estado": {
+                                        "type": "string",
+                                        "example": "PROGRAMADA"
+                                    },
+                                    "observaciones": {
+                                        "type": "string",
+                                        "example": "Verificar acceso en porteria"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Visita programada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/visitas-domiciliarias/{id}": {
+            "put": {
+                "tags": [
+                    "Visitas Domiciliarias"
+                ],
+                "summary": "Actualizar una visita domiciliaria (Check-in/Check-out o Cancelación)",
+                "operationId": "e42961e52417c4cc9105b5d2536b66df",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la visita",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "estado": {
+                                        "type": "string",
+                                        "example": "REALIZADA"
+                                    },
+                                    "fecha_realizada": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2026-10-15 09:45:00"
+                                    },
+                                    "latitud_checkin": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 6.2442
+                                    },
+                                    "longitud_checkin": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": -75.5812
+                                    },
+                                    "motivo_cancelacion": {
+                                        "type": "string",
+                                        "example": "Paciente no se encontraba en el domicilio"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Visita actualizada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Visitas Domiciliarias"
+                ],
+                "summary": "Eliminar una visita domiciliaria",
+                "operationId": "f126b1520f54a58811442c21a7928ebd",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la visita",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Visita eliminada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/zonas": {
+            "get": {
+                "tags": [
+                    "Zonas"
+                ],
+                "summary": "Listar todas las zonas",
+                "operationId": "5eebeaec85b3cb8748725bd48c2e5705",
+                "responses": {
+                    "200": {
+                        "description": "Listado de zonas"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Zonas"
+                ],
+                "summary": "Crear nueva zona",
+                "operationId": "3149bedc3388d702a54f51e29284984c",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "Norte"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Zona creada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/zonas/{id}": {
+            "put": {
+                "tags": [
+                    "Zonas"
+                ],
+                "summary": "Actualizar una zona",
+                "operationId": "d931af4f93324329649e6d81d6ebecd1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la zona",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nombre"
+                                ],
+                                "properties": {
+                                    "nombre": {
+                                        "type": "string",
+                                        "example": "Sur"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Zona actualizada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Zonas"
+                ],
+                "summary": "Eliminar una zona",
+                "operationId": "f5d3f13db318a116f3f778727c28581b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la zona",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Zona eliminada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "description": "Introduce tu token JWT con el formato **Bearer &lt;token&gt;**",
+                "name": "Authorization",
+                "in": "header",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Usuarios",
+            "description": "Endpoints para la gestión, creación y actualización de usuarios"
+        },
+        {
+            "name": "Aseguradoras",
+            "description": "Aseguradoras"
+        },
+        {
+            "name": "Autenticación",
+            "description": "Autenticación"
+        },
+        {
+            "name": "Barrios",
+            "description": "Barrios"
+        },
+        {
+            "name": "Cargos",
+            "description": "Cargos"
+        },
+        {
+            "name": "Comunas",
+            "description": "Comunas"
+        },
+        {
+            "name": "Cuidadores",
+            "description": "Cuidadores"
+        },
+        {
+            "name": "Detalle Solicitudes Equipos",
+            "description": "Detalle Solicitudes Equipos"
+        },
+        {
+            "name": "Especialidades",
+            "description": "Especialidades"
+        },
+        {
+            "name": "Laboratorios",
+            "description": "Laboratorios"
+        },
+        {
+            "name": "Ordenes Médicas",
+            "description": "Ordenes Médicas"
+        },
+        {
+            "name": "Paciente Diagnósticos",
+            "description": "Paciente Diagnósticos"
+        },
+        {
+            "name": "Pacientes",
+            "description": "Pacientes"
+        },
+        {
+            "name": "Personal",
+            "description": "Personal"
+        },
+        {
+            "name": "Solicitudes Equipos",
+            "description": "Solicitudes Equipos"
+        },
+        {
+            "name": "Telexperticias",
+            "description": "Telexperticias"
+        },
+        {
+            "name": "Tutelas",
+            "description": "Tutelas"
+        },
+        {
+            "name": "Visitas Domiciliarias",
+            "description": "Visitas Domiciliarias"
+        },
+        {
+            "name": "Zonas",
+            "description": "Zonas"
+        }
+    ]
+}
