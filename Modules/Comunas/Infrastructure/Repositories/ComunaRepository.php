@@ -38,6 +38,11 @@ class ComunaRepository implements ComunaRepositoryInterface
         return Comuna::find($id);
     }
 
+    public function obtenerPorZona(int $id_zona)
+    {
+        return Comuna::where('id_zona', $id_zona)->get();
+    }
+
     public function listar()
     {
         return Comuna::all();

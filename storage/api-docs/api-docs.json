@@ -552,6 +552,36 @@
                 ]
             }
         },
+        "/api/v1/comunas/zona/{id_zona}": {
+            "get": {
+                "tags": [
+                    "Comunas"
+                ],
+                "summary": "Listar comunas por zona",
+                "operationId": "84058816cf9dec5af061ed2b515a56ec",
+                "parameters": [
+                    {
+                        "name": "id_zona",
+                        "in": "path",
+                        "description": "ID de la zona",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Listado de comunas filtradas por zona"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v1/comunas/{id}": {
             "put": {
                 "tags": [
@@ -786,6 +816,25 @@
                 "responses": {
                     "200": {
                         "description": "Cuidador eliminado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/dashboard": {
+            "get": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Obtener métricas y KPIs del Dashboard",
+                "operationId": "e443351c8ea7bfcf465610ab9ea35531",
+                "responses": {
+                    "200": {
+                        "description": "Datos completos del dashboard estructurados por secciones"
                     }
                 },
                 "security": [
@@ -1251,6 +1300,371 @@
                 ]
             }
         },
+        "/api/v1/mapas/pacientes/puntos": {
+            "get": {
+                "tags": [
+                    "Mapas"
+                ],
+                "summary": "Obtener marcadores livianos para el mapa (80k pacientes optimizado)",
+                "operationId": "25f449e218b2bdcc7ed0c0078bc64a54",
+                "parameters": [
+                    {
+                        "name": "id_zona",
+                        "in": "query",
+                        "description": "Filtrar por Zona",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "id_comuna",
+                        "in": "query",
+                        "description": "Filtrar por Comuna",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "id_aseguradora",
+                        "in": "query",
+                        "description": "Filtrar por EPS",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "estado",
+                        "in": "query",
+                        "description": "Filtrar por estado del paciente",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Cantidad por página (por defecto 500)",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Número de página",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de puntos coordinados para el mapa con metadatos de paginación"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/mapas/pacientes/detalle/{id}": {
+            "get": {
+                "tags": [
+                    "Mapas"
+                ],
+                "summary": "Obtener el detalle clínico y operativo de un punto seleccionado",
+                "operationId": "dbe9800555f39b28ec6092231b57552f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del paciente",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Información detallada para ser cargada en un popup/modal"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/mapas/rutas-visitas": {
+            "get": {
+                "tags": [
+                    "Mapas"
+                ],
+                "summary": "Obtener la ruta de visitas de pacientes organizadas por fecha y profesional",
+                "operationId": "e343a462857fb02f75ebde43499cff70",
+                "parameters": [
+                    {
+                        "name": "fecha_inicio",
+                        "in": "query",
+                        "description": "Fecha de inicio (YYYY-MM-DD)",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "fecha_fin",
+                        "in": "query",
+                        "description": "Fecha de fin (YYYY-MM-DD)",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "id_profesional",
+                        "in": "query",
+                        "description": "Filtrar por ID del profesional",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Cantidad por página (por defecto 200)",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Número de página",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Rutas de visitas numeradas"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/mapas/pacientes/{id}/ordenes": {
+            "get": {
+                "tags": [
+                    "Mapas"
+                ],
+                "summary": "Obtener las órdenes médicas de un paciente junto con su profesional asociado",
+                "operationId": "c42052b68e37cca71bbf5411d8590d35",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del paciente",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Datos del paciente con sus ordenes médicas"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/mapas/comunas/{id}/pacientes": {
+            "get": {
+                "tags": [
+                    "Mapas"
+                ],
+                "summary": "Obtener todos los pacientes de una comuna específica con datos geográficos",
+                "operationId": "de693404d1dd1551e5c5f39033612b65",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la comuna",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de pacientes de la comuna con geolocalización básica",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id_paciente": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "latitud": {
+                                                        "type": "string",
+                                                        "example": "7.12345678"
+                                                    },
+                                                    "longitud": {
+                                                        "type": "string",
+                                                        "example": "-73.12345678"
+                                                    },
+                                                    "url_google_maps": {
+                                                        "type": "string",
+                                                        "example": "https://maps.google.com/?q=..."
+                                                    },
+                                                    "identificacion": {
+                                                        "type": "string",
+                                                        "example": "12345678"
+                                                    },
+                                                    "nombre_completo": {
+                                                        "type": "string",
+                                                        "example": "JUAN PEREZ"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/mapas/pacientes/puntos/todos": {
+            "get": {
+                "tags": [
+                    "Mapas"
+                ],
+                "summary": "Obtener todos los marcadores livianos para el mapa (Sin paginación)",
+                "operationId": "911086ae2d61a60693919278b9f1ea1d",
+                "parameters": [
+                    {
+                        "name": "id_zona",
+                        "in": "query",
+                        "description": "Filtrar por Zona",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "id_comuna",
+                        "in": "query",
+                        "description": "Filtrar por Comuna",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "id_aseguradora",
+                        "in": "query",
+                        "description": "Filtrar por EPS",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "estado",
+                        "in": "query",
+                        "description": "Filtrar por estado del paciente",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista completa de puntos coordinados para el mapa"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/mapas/rutas-optimizadas": {
+            "get": {
+                "tags": [
+                    "Mapas"
+                ],
+                "summary": "Obtener predicción de rutas optimizadas por mes basadas en frecuencia y cercanía",
+                "operationId": "bce4e57294c1bb55070e945ae8aa5d95",
+                "parameters": [
+                    {
+                        "name": "mes",
+                        "in": "query",
+                        "description": "Mes a proyectar (1-12)",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "anio",
+                        "in": "query",
+                        "description": "Año a proyectar",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "id_personal",
+                        "in": "query",
+                        "description": "Filtrar por profesional",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Rutas proyectadas optimizadas"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v1/ordenes-medicas": {
             "get": {
                 "tags": [
@@ -1450,7 +1864,8 @@
                             "schema": {
                                 "required": [
                                     "id_paciente",
-                                    "codigo_cie10"
+                                    "codigo_cie10",
+                                    "id_visita"
                                 ],
                                 "properties": {
                                     "id_paciente": {
@@ -1461,8 +1876,12 @@
                                         "type": "string",
                                         "example": "A001"
                                     },
+                                    "id_visita": {
+                                        "description": "ID de la visita. Use 0 para registros históricos.",
+                                        "type": "integer",
+                                        "example": 123
+                                    },
                                     "tipo_diagnostico": {
-                                        "description": "Por defecto es DOMICILIARIO",
                                         "type": "string",
                                         "example": "DOMICILIARIO"
                                     },
@@ -1497,13 +1916,13 @@
                 ]
             }
         },
-        "/api/v1/paciente-diagnosticos/{id_paciente}/{codigo_cie10}/{tipo_diagnostico}": {
+        "/api/v1/paciente-diagnosticos/{id_paciente}/{codigo_cie10}/{tipo_diagnostico}/{id_visita}": {
             "put": {
                 "tags": [
                     "Paciente Diagnósticos"
                 ],
                 "summary": "Actualizar un diagnóstico (Llave compuesta)",
-                "operationId": "ea12f9cf9a1389a9ff8b872e243b267d",
+                "operationId": "6333d1e3c80fd1fd4c2e3a562449f50b",
                 "parameters": [
                     {
                         "name": "id_paciente",
@@ -1530,6 +1949,15 @@
                         "required": true,
                         "schema": {
                             "type": "string"
+                        }
+                    },
+                    {
+                        "name": "id_visita",
+                        "in": "path",
+                        "description": "ID de la visita",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
                         }
                     }
                 ],
@@ -1569,7 +1997,7 @@
                     "Paciente Diagnósticos"
                 ],
                 "summary": "Eliminar un diagnóstico (Llave compuesta)",
-                "operationId": "ce947617a4abf85312d5d6124172b90b",
+                "operationId": "fafb7077e43cc672d827956346aec03d",
                 "parameters": [
                     {
                         "name": "id_paciente",
@@ -1597,6 +2025,15 @@
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    {
+                        "name": "id_visita",
+                        "in": "path",
+                        "description": "ID de la visita",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
                     }
                 ],
                 "responses": {
@@ -1612,6 +2049,124 @@
             }
         },
         "/api/v1/pacientes": {
+            "get": {
+                "tags": [
+                    "Pacientes"
+                ],
+                "summary": "Listar pacientes con paginación dinámica y filtros",
+                "operationId": "0ed67a4d30c3eb23ddd7393456834c77",
+                "parameters": [
+                    {
+                        "name": "por_pagina",
+                        "in": "query",
+                        "description": "Cantidad de registros por página (1–100). Default: 15",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15,
+                            "maximum": 100,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "pagina",
+                        "in": "query",
+                        "description": "Número de página a consultar. Default: 1",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "nombre",
+                        "in": "query",
+                        "description": "Filtra por nombre del paciente (búsqueda parcial)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Juan"
+                        }
+                    },
+                    {
+                        "name": "identificacion",
+                        "in": "query",
+                        "description": "Filtra por número de identificación (búsqueda parcial)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "1234"
+                        }
+                    },
+                    {
+                        "name": "estado",
+                        "in": "query",
+                        "description": "Filtra por estado del paciente",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "activo"
+                        }
+                    },
+                    {
+                        "name": "id_aseguradora",
+                        "in": "query",
+                        "description": "Filtra por ID de aseguradora",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Listado paginado de pacientes",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "pagina_actual": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "por_pagina": {
+                                                    "type": "integer",
+                                                    "example": 15
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 120
+                                                },
+                                                "ultima_pagina": {
+                                                    "type": "integer",
+                                                    "example": 8
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
             "post": {
                 "tags": [
                     "Pacientes"
@@ -1984,6 +2539,176 @@
                 "responses": {
                     "200": {
                         "description": "Personal eliminado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/servicios": {
+            "get": {
+                "tags": [
+                    "Servicios"
+                ],
+                "summary": "Listar todos los servicios",
+                "operationId": "790fb4eb8928b1ecf3e6927b69e1657e",
+                "responses": {
+                    "200": {
+                        "description": "Listado de servicios"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Servicios"
+                ],
+                "summary": "Crear un nuevo servicio",
+                "operationId": "2d1e3755bbe514a5cc9771990c2f0b1f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codigo_servicio",
+                                    "nombre_servicio"
+                                ],
+                                "properties": {
+                                    "codigo_servicio": {
+                                        "type": "string",
+                                        "example": "S001"
+                                    },
+                                    "nombre_servicio": {
+                                        "type": "string",
+                                        "example": "Consulta Médica General"
+                                    },
+                                    "descripcion": {
+                                        "type": "string",
+                                        "example": "Atención primaria en salud"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Servicio creado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/servicios/{id}": {
+            "get": {
+                "tags": [
+                    "Servicios"
+                ],
+                "summary": "Obtener un servicio por ID",
+                "operationId": "19a0b891c0705d73f2415636eac441d0",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del servicio",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detalle del servicio"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Servicios"
+                ],
+                "summary": "Actualizar un servicio",
+                "operationId": "57afc443153f784c396a2190dc05fff6",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del servicio",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nombre_servicio": {
+                                        "type": "string",
+                                        "example": "Consulta Médica Especializada"
+                                    },
+                                    "descripcion": {
+                                        "type": "string",
+                                        "example": "Atención por especialista"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Servicio actualizado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Servicios"
+                ],
+                "summary": "Eliminar un servicio",
+                "operationId": "86f118df2189b75d7fd5f6c174b83c8a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del servicio",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Servicio eliminado exitosamente"
                     }
                 },
                 "security": [
@@ -3099,6 +3824,10 @@
             "description": "Cuidadores"
         },
         {
+            "name": "Dashboard",
+            "description": "Dashboard"
+        },
+        {
             "name": "Detalle Solicitudes Equipos",
             "description": "Detalle Solicitudes Equipos"
         },
@@ -3109,6 +3838,10 @@
         {
             "name": "Laboratorios",
             "description": "Laboratorios"
+        },
+        {
+            "name": "Mapas",
+            "description": "Mapas"
         },
         {
             "name": "Ordenes Médicas",
@@ -3125,6 +3858,10 @@
         {
             "name": "Personal",
             "description": "Personal"
+        },
+        {
+            "name": "Servicios",
+            "description": "Servicios"
         },
         {
             "name": "Solicitudes Equipos",

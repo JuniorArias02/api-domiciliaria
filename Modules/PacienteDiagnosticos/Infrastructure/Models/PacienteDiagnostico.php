@@ -18,6 +18,7 @@ class PacienteDiagnostico extends Model
     protected $fillable = [
         'id_paciente',
         'codigo_cie10',
+        'id_visita',
         'tipo_diagnostico',
         'es_principal',
         'fecha_registro',

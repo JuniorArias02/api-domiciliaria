@@ -115,7 +115,7 @@ return new class extends Migration
             $table->string('telefono', 50)->nullable();
             $table->string('email', 150)->nullable();
             $table->unsignedInteger('id_aseguradora');
-            $table->string('regimen', 20)->default('CONTRIBUTIVO');
+            $table->string('regimen', 50)->default('CONTRIBUTIVO');
             $table->unsignedInteger('id_madrina')->nullable();
             $table->date('fecha_ingreso')->nullable();
             $table->string('direccion', 255);
@@ -127,7 +127,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('id_aseguradora')->references('id_aseguradora')->on('aseguradoras');
-            $table->foreign('id_madrina')->references('id_usuario')->on('usuarios');
+            $table->foreign('id_madrina')->references('id_usuario')->on('usuarios')->onDelete('set null');
             $table->foreign('id_barrio')->references('id_barrio')->on('barrios');
         });
 
@@ -147,7 +147,7 @@ return new class extends Migration
             $table->tinyInteger('horas_diarias')->nullable()->unsigned();
             $table->timestamps();
 
-            $table->foreign('id_paciente')->references('id_paciente')->on('pacientes');
+            $table->foreign('id_paciente')->references('id_paciente')->on('pacientes')->onDelete('cascade');
         });
 
         // ================================================================
@@ -165,7 +165,7 @@ return new class extends Migration
             $table->text('observaciones')->nullable();
             $table->timestamps();
 
-            $table->foreign('id_paciente')->references('id_paciente')->on('pacientes');
+            $table->foreign('id_paciente')->references('id_paciente')->on('pacientes')->onDelete('cascade');
         });
 
         // ================================================================
@@ -182,7 +182,7 @@ return new class extends Migration
 
             $table->primary(['id_paciente', 'codigo_cie10', 'tipo_diagnostico']);
 
-            $table->foreign('id_paciente')->references('id_paciente')->on('pacientes');
+            $table->foreign('id_paciente')->references('id_paciente')->on('pacientes')->onDelete('cascade');
             $table->foreign('codigo_cie10')->references('codigo')->on('diagnosticos_cie10');
         });
 
@@ -197,7 +197,7 @@ return new class extends Migration
             $table->string('modalidad', 20)->nullable();
             $table->string('tiempo_requerido', 20)->nullable();
             $table->string('estado', 20)->default('PENDIENTE');
-            $table->date('fecha_solicitud')->nullable();
+            $table->date('fecha_solicitud')->nullable()->default(DB::raw('(curdate())'));
             $table->date('fecha_entrega')->nullable();
             $table->date('fecha_devolucion_esperada')->nullable();
             $table->date('fecha_devolucion_real')->nullable();
@@ -205,7 +205,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('id_paciente')->references('id_paciente')->on('pacientes');
-            $table->foreign('id_usuario_gestiona')->references('id_usuario')->on('usuarios');
+            $table->foreign('id_usuario_gestiona')->references('id_usuario')->on('usuarios')->onDelete('set null');
         });
 
         Schema::create('detalle_solicitud_equipos', function (Blueprint $table) {
@@ -215,7 +215,7 @@ return new class extends Migration
             $table->tinyInteger('cantidad')->default(1)->unsigned();
             $table->string('observacion', 300)->nullable();
 
-            $table->foreign('id_solicitud')->references('id_solicitud')->on('solicitudes_equipos');
+            $table->foreign('id_solicitud')->references('id_solicitud')->on('solicitudes_equipos')->onDelete('cascade');
             $table->foreign('id_equipo')->references('id_equipo')->on('catalogo_equipos');
         });
 
@@ -238,7 +238,7 @@ return new class extends Migration
 
             $table->foreign('id_paciente')->references('id_paciente')->on('pacientes');
             $table->foreign('id_especialidad')->references('id_especialidad')->on('especialidades');
-            $table->foreign('id_personal_ordena')->references('id_personal')->on('personal');
+            $table->foreign('id_personal_ordena')->references('id_personal')->on('personal')->onDelete('set null');
         });
 
         // ================================================================
@@ -263,11 +263,11 @@ return new class extends Migration
             $table->text('observaciones')->nullable();
             $table->timestamps();
 
-            $table->foreign('id_orden_asociada')->references('id_orden')->on('ordenes_medicas');
+            $table->foreign('id_orden_asociada')->references('id_orden')->on('ordenes_medicas')->onDelete('set null');
             $table->foreign('id_paciente')->references('id_paciente')->on('pacientes');
             $table->foreign('id_personal')->references('id_personal')->on('personal');
             $table->foreign('id_especialidad')->references('id_especialidad')->on('especialidades');
-            $table->foreign('id_usuario_programa')->references('id_usuario')->on('usuarios');
+            $table->foreign('id_usuario_programa')->references('id_usuario')->on('usuarios')->onDelete('set null');
         });
 
         // ================================================================
@@ -289,9 +289,9 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('id_paciente')->references('id_paciente')->on('pacientes');
-            $table->foreign('id_orden_asociada')->references('id_orden')->on('ordenes_medicas');
-            $table->foreign('id_personal_toma')->references('id_personal')->on('personal');
-            $table->foreign('id_usuario_solicita')->references('id_usuario')->on('usuarios');
+            $table->foreign('id_orden_asociada')->references('id_orden')->on('ordenes_medicas')->onDelete('set null');
+            $table->foreign('id_personal_toma')->references('id_personal')->on('personal')->onDelete('set null');
+            $table->foreign('id_usuario_solicita')->references('id_usuario')->on('usuarios')->onDelete('set null');
         });
 
         // ================================================================
@@ -311,7 +311,7 @@ return new class extends Migration
 
             $table->foreign('id_paciente')->references('id_paciente')->on('pacientes');
             $table->foreign('id_especialidad')->references('id_especialidad')->on('especialidades');
-            $table->foreign('id_usuario_solicita')->references('id_usuario')->on('usuarios');
+            $table->foreign('id_usuario_solicita')->references('id_usuario')->on('usuarios')->onDelete('set null');
         });
     }
 

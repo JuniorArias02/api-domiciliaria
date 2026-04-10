@@ -1,0 +1,229 @@
+<?php
+
+namespace Modules\Mapas\Infrastructure\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Modules\Mapas\Application\UseCases\ObtenerPuntosMapa;
+use Modules\Mapas\Application\UseCases\ObtenerTodosLosPuntosMapa;
+use Modules\Mapas\Application\UseCases\ObtenerDetallePunto;
+use Modules\Mapas\Application\UseCases\ObtenerPacientesPorComuna;
+use Modules\Mapas\Application\UseCases\OptimizarRutasMensuales;
+use OpenApi\Attributes as OA;
+
+class MapaController
+{
+    #[OA\Get(
+        path: '/api/v1/mapas/pacientes/puntos',
+        summary: 'Obtener marcadores livianos para el mapa (80k pacientes optimizado)',
+        security: [['bearerAuth' => []]],
+        tags: ['Mapas']
+    )]
+    #[OA\Parameter(name: 'id_zona', description: 'Filtrar por Zona', in: 'query', schema: new OA\Schema(type: 'integer'))]
+    #[OA\Parameter(name: 'id_comuna', description: 'Filtrar por Comuna', in: 'query', schema: new OA\Schema(type: 'integer'))]
+    #[OA\Parameter(name: 'id_aseguradora', description: 'Filtrar por EPS', in: 'query', schema: new OA\Schema(type: 'integer'))]
+    #[OA\Parameter(name: 'estado', description: 'Filtrar por estado del paciente', in: 'query', schema: new OA\Schema(type: 'string'))]
+    #[OA\Parameter(name: 'per_page', description: 'Cantidad por página (por defecto 500)', in: 'query', schema: new OA\Schema(type: 'integer'))]
+    #[OA\Parameter(name: 'page', description: 'Número de página', in: 'query', schema: new OA\Schema(type: 'integer'))]
+    #[OA\Response(response: 200, description: 'Lista de puntos coordinados para el mapa con metadatos de paginación')]
+    public function getMarkers(Request $request, ObtenerPuntosMapa $useCase)
+    {
+        try {
+            $filtros = $request->only(['id_zona', 'id_comuna', 'id_aseguradora', 'estado', 'per_page', 'page']);
+            $paginador = $useCase->execute($filtros);
+            
+            // Retornamos una versión "Lite" optimizada
+            return response()->json([
+                'total'        => $paginador->total(),
+                'per_page'     => $paginador->perPage(),
+                'current_page' => $paginador->currentPage(),
+                'last_page'    => $paginador->lastPage(),
+                'data'         => $paginador->items(),
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+    }
+
+    #[OA\Get(
+        path: '/api/v1/mapas/pacientes/detalle/{id}',
+        summary: 'Obtener el detalle clínico y operativo de un punto seleccionado',
+        security: [['bearerAuth' => []]],
+        tags: ['Mapas']
+    )]
+    #[OA\Parameter(name: 'id', description: 'ID del paciente', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))]
+    #[OA\Response(response: 200, description: 'Información detallada para ser cargada en un popup/modal')]
+    public function getDetail(int $id, ObtenerDetallePunto $useCase)
+    {
+        try {
+            $detalle = $useCase->execute($id);
+            return response()->json(['data' => $detalle], 200);
+        } catch (\Exception $e) {
+            $status = $e->getCode() ?: 400;
+            $status = $status >= 400 && $status < 600 ? $status : 400;
+            return response()->json(['error' => $e->getMessage()], $status);
+        }
+    }
+
+    #[OA\Get(
+        path: '/api/v1/mapas/rutas-visitas',
+        summary: 'Obtener la ruta de visitas de pacientes organizadas por fecha y profesional',
+        security: [['bearerAuth' => []]],
+        tags: ['Mapas']
+    )]
+    #[OA\Parameter(name: 'fecha_inicio', description: 'Fecha de inicio (YYYY-MM-DD)', in: 'query', schema: new OA\Schema(type: 'string', format: 'date'))]
+    #[OA\Parameter(name: 'fecha_fin', description: 'Fecha de fin (YYYY-MM-DD)', in: 'query', schema: new OA\Schema(type: 'string', format: 'date'))]
+    #[OA\Parameter(name: 'id_profesional', description: 'Filtrar por ID del profesional', in: 'query', schema: new OA\Schema(type: 'integer'))]
+    #[OA\Parameter(name: 'per_page', description: 'Cantidad por página (por defecto 200)', in: 'query', schema: new OA\Schema(type: 'integer'))]
+    #[OA\Parameter(name: 'page', description: 'Número de página', in: 'query', schema: new OA\Schema(type: 'integer'))]
+    #[OA\Response(response: 200, description: 'Rutas de visitas numeradas')]
+    public function getRutaVisitas(Request $request, \Modules\Mapas\Application\UseCases\ObtenerRutaVisitas $useCase)
+    {
+        try {
+            $filtros = [
+                'fecha_inicio'   => $request->query('fecha_inicio'),
+                'fecha_fin'      => $request->query('fecha_fin'),
+                'id_profesional' => $request->query('id_profesional'),
+                'per_page'       => $request->query('per_page'),
+                'page'           => $request->query('page')
+            ];
+
+            $paginador = $useCase->execute($filtros);
+
+            return response()->json([
+                'success'      => true,
+                'total'        => $paginador->total(),
+                'per_page'     => $paginador->perPage(),
+                'current_page' => $paginador->currentPage(),
+                'last_page'    => $paginador->lastPage(),
+                'data'         => $paginador->items()
+            ], 200);
+
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error interno: ' . $e->getMessage()], 500);
+        }
+    }
+
+    #[OA\Get(
+        path: '/api/v1/mapas/pacientes/{id}/ordenes',
+        summary: 'Obtener las órdenes médicas de un paciente junto con su profesional asociado',
+        security: [['bearerAuth' => []]],
+        tags: ['Mapas']
+    )]
+    #[OA\Parameter(name: 'id', description: 'ID del paciente', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))]
+    #[OA\Response(response: 200, description: 'Datos del paciente con sus ordenes médicas')]
+    public function getOrdenesPaciente(int $id, \Modules\Mapas\Application\UseCases\ObtenerOrdenesPaciente $useCase)
+    {
+        try {
+            $resultado = $useCase->execute($id);
+
+            return response()->json([
+                'success' => true,
+                'data'    => $resultado
+            ], 200);
+
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        } catch (\Exception $e) {
+            $status = $e->getCode() ?: 500;
+            $status = $status >= 400 && $status < 600 ? $status : 500;
+            return response()->json(['error' => $e->getMessage()], $status);
+        }
+    }
+
+    #[OA\Get(
+        path: '/api/v1/mapas/comunas/{id}/pacientes',
+        summary: 'Obtener todos los pacientes de una comuna específica con datos geográficos',
+        security: [['bearerAuth' => []]],
+        tags: ['Mapas']
+    )]
+    #[OA\Parameter(name: 'id', description: 'ID de la comuna', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))]
+    #[OA\Response(
+        response: 200, 
+        description: 'Lista de pacientes de la comuna con geolocalización básica',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'success', type: 'boolean', example: true),
+                new OA\Property(
+                    property: 'data', 
+                    type: 'array', 
+                    items: new OA\Items(
+                        properties: [
+                            new OA\Property(property: 'id_paciente', type: 'integer', example: 1),
+                            new OA\Property(property: 'latitud', type: 'string', example: '7.12345678'),
+                            new OA\Property(property: 'longitud', type: 'string', example: '-73.12345678'),
+                            new OA\Property(property: 'url_google_maps', type: 'string', example: 'https://maps.google.com/?q=...'),
+                            new OA\Property(property: 'identificacion', type: 'string', example: '12345678'),
+                            new OA\Property(property: 'nombre_completo', type: 'string', example: 'JUAN PEREZ')
+                        ]
+                    )
+                )
+            ]
+        )
+    )]
+    public function getPacientesPorComuna(int $id, ObtenerPacientesPorComuna $useCase)
+    {
+        try {
+            $pacientes = $useCase->execute($id);
+            return response()->json([
+                'success' => true,
+                'data'    => $pacientes
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+    }
+
+    #[OA\Get(
+        path: '/api/v1/mapas/pacientes/puntos/todos',
+        summary: 'Obtener todos los marcadores livianos para el mapa (Sin paginación)',
+        security: [['bearerAuth' => []]],
+        tags: ['Mapas']
+    )]
+    #[OA\Parameter(name: 'id_zona', description: 'Filtrar por Zona', in: 'query', schema: new OA\Schema(type: 'integer'))]
+    #[OA\Parameter(name: 'id_comuna', description: 'Filtrar por Comuna', in: 'query', schema: new OA\Schema(type: 'integer'))]
+    #[OA\Parameter(name: 'id_aseguradora', description: 'Filtrar por EPS', in: 'query', schema: new OA\Schema(type: 'integer'))]
+    #[OA\Parameter(name: 'estado', description: 'Filtrar por estado del paciente', in: 'query', schema: new OA\Schema(type: 'string'))]
+    #[OA\Response(response: 200, description: 'Lista completa de puntos coordinados para el mapa')]
+    public function getAllMarkers(Request $request, ObtenerTodosLosPuntosMapa $useCase)
+    {
+        try {
+            $filtros = $request->only(['id_zona', 'id_comuna', 'id_aseguradora', 'estado']);
+            $puntos = $useCase->execute($filtros);
+            
+            return response()->json([
+                'success' => true,
+                'total'   => count($puntos),
+                'data'    => $puntos,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+    }
+
+    #[OA\Get(
+        path: '/api/v1/mapas/rutas-optimizadas',
+        summary: 'Obtener predicción de rutas optimizadas por mes basadas en frecuencia y cercanía',
+        security: [['bearerAuth' => []]],
+        tags: ['Mapas']
+    )]
+    #[OA\Parameter(name: 'mes', description: 'Mes a proyectar (1-12)', in: 'query', schema: new OA\Schema(type: 'integer'))]
+    #[OA\Parameter(name: 'anio', description: 'Año a proyectar', in: 'query', schema: new OA\Schema(type: 'integer'))]
+    #[OA\Parameter(name: 'id_personal', description: 'Filtrar por profesional', in: 'query', schema: new OA\Schema(type: 'integer'))]
+    #[OA\Response(response: 200, description: 'Rutas proyectadas optimizadas')]
+    public function getRutasOptimizadas(Request $request, OptimizarRutasMensuales $useCase)
+    {
+        try {
+            $filtros = $request->only(['mes', 'anio', 'id_personal']);
+            $resultado = $useCase->execute($filtros);
+
+            return response()->json([
+                'success' => true,
+                'data'    => $resultado
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+    }
+}

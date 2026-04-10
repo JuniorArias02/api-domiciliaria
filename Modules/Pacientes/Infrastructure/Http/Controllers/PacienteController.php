@@ -7,10 +7,102 @@ use Modules\Pacientes\Application\UseCases\CrearPaciente;
 use Modules\Pacientes\Application\UseCases\ActualizarPaciente;
 use Modules\Pacientes\Application\UseCases\EliminarPaciente;
 use Modules\Pacientes\Application\UseCases\ActualizarUbicacion;
+use Modules\Pacientes\Application\UseCases\ObtenerPacientes;
 use OpenApi\Attributes as OA;
 
 class PacienteController
 {
+    #[OA\Get(
+        path: '/api/v1/pacientes',
+        summary: 'Listar pacientes con paginación dinámica y filtros',
+        security: [['bearerAuth' => []]],
+        tags: ['Pacientes']
+    )]
+    #[OA\Parameter(
+        name: 'por_pagina',
+        description: 'Cantidad de registros por página (1–100). Default: 15',
+        in: 'query',
+        required: false,
+        schema: new OA\Schema(type: 'integer', default: 15, minimum: 1, maximum: 100)
+    )]
+    #[OA\Parameter(
+        name: 'pagina',
+        description: 'Número de página a consultar. Default: 1',
+        in: 'query',
+        required: false,
+        schema: new OA\Schema(type: 'integer', default: 1, minimum: 1)
+    )]
+    #[OA\Parameter(
+        name: 'nombre',
+        description: 'Filtra por nombre del paciente (búsqueda parcial)',
+        in: 'query',
+        required: false,
+        schema: new OA\Schema(type: 'string', example: 'Juan')
+    )]
+    #[OA\Parameter(
+        name: 'identificacion',
+        description: 'Filtra por número de identificación (búsqueda parcial)',
+        in: 'query',
+        required: false,
+        schema: new OA\Schema(type: 'string', example: '1234')
+    )]
+    #[OA\Parameter(
+        name: 'estado',
+        description: 'Filtra por estado del paciente',
+        in: 'query',
+        required: false,
+        schema: new OA\Schema(type: 'string', example: 'activo')
+    )]
+    #[OA\Parameter(
+        name: 'id_aseguradora',
+        description: 'Filtra por ID de aseguradora',
+        in: 'query',
+        required: false,
+        schema: new OA\Schema(type: 'integer', example: 1)
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Listado paginado de pacientes',
+        content: new OA\MediaType(
+            mediaType: 'application/json',
+            schema: new OA\Schema(
+                properties: [
+                    new OA\Property(property: 'data', type: 'array', items: new OA\Items(type: 'object')),
+                    new OA\Property(property: 'meta', type: 'object', properties: [
+                        new OA\Property(property: 'pagina_actual', type: 'integer', example: 1),
+                        new OA\Property(property: 'por_pagina', type: 'integer', example: 15),
+                        new OA\Property(property: 'total', type: 'integer', example: 120),
+                        new OA\Property(property: 'ultima_pagina', type: 'integer', example: 8),
+                    ]),
+                ]
+            )
+        )
+    )]
+    public function index(Request $request, ObtenerPacientes $useCase)
+    {
+        try {
+            $porPagina  = (int) $request->query('por_pagina', 15);
+            $pagina     = (int) $request->query('pagina', 1);
+            $filtros    = $request->only(['nombre', 'identificacion', 'estado', 'id_aseguradora']);
+            $resultado = $useCase->execute($porPagina, $pagina, $filtros);
+
+            return response()->json([
+                'data' => $resultado->items(),
+                'meta' => [
+                    'pagina_actual' => $resultado->currentPage(),
+                    'por_pagina'    => $resultado->perPage(),
+                    'total'         => $resultado->total(),
+                    'ultima_pagina' => $resultado->lastPage(),
+                ],
+            ], 200);
+        } catch (\Exception $e) {
+            $status = $e->getCode();
+            $status = ($status >= 400 && $status < 600) ? $status : 500;
+            return response()->json(['error' => $e->getMessage()], $status);
+        }
+    }
+
+
     #[OA\Post(
         path: '/api/v1/pacientes',
         summary: 'Crear un nuevo paciente',

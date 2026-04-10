@@ -37,4 +37,36 @@ class PacienteRepository implements PacienteRepositoryInterface
     {
         return Paciente::find($id);
     }
+
+    public function obtenerPaginado(int $porPagina, int $pagina, array $filtros = [])
+    {
+        $query = Paciente::query();
+
+        // Cargar relaciones para obtener nombres
+        $query->with(['aseguradora', 'madrina', 'barrio']);
+
+        // Filtro por nombre (búsqueda parcial, insensible a mayúsculas)
+        if (!empty($filtros['nombre'])) {
+            $query->where('nombre_completo', 'like', '%' . $filtros['nombre'] . '%');
+        }
+
+        // Filtro por número de identificación (búsqueda parcial)
+        if (!empty($filtros['identificacion'])) {
+            $query->where('identificacion', 'like', '%' . $filtros['identificacion'] . '%');
+        }
+
+        // Filtro por estado (active, inactive, etc.)
+        if (!empty($filtros['estado'])) {
+            $query->where('estado', $filtros['estado']);
+        }
+
+        // Filtro por aseguradora (ID exacto)
+        if (!empty($filtros['id_aseguradora'])) {
+            $query->where('id_aseguradora', (int) $filtros['id_aseguradora']);
+        }
+
+        return $query
+            ->orderBy('nombre_completo', 'asc')
+            ->paginate(perPage: $porPagina, page: $pagina);
+    }
 }

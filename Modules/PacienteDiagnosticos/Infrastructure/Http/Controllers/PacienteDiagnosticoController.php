@@ -41,11 +41,12 @@ class PacienteDiagnosticoController
         content: new OA\MediaType(
             mediaType: 'application/json',
             schema: new OA\Schema(
-                required: ['id_paciente', 'codigo_cie10'],
+                required: ['id_paciente', 'codigo_cie10', 'id_visita'],
                 properties: [
                     new OA\Property(property: 'id_paciente', type: 'integer', example: 1),
                     new OA\Property(property: 'codigo_cie10', type: 'string', example: 'A001'),
-                    new OA\Property(property: 'tipo_diagnostico', type: 'string', example: 'DOMICILIARIO', description: 'Por defecto es DOMICILIARIO'),
+                    new OA\Property(property: 'id_visita', type: 'integer', example: 123, description: 'ID de la visita. Use 0 para registros históricos.'),
+                    new OA\Property(property: 'tipo_diagnostico', type: 'string', example: 'DOMICILIARIO'),
                     new OA\Property(property: 'es_principal', type: 'integer', example: 1),
                     new OA\Property(property: 'fecha_registro', type: 'string', format: 'date', example: '2026-04-10'),
                     new OA\Property(property: 'observacion', type: 'string', example: 'Diagnóstico crónico')
@@ -67,7 +68,7 @@ class PacienteDiagnosticoController
     }
 
     #[OA\Put(
-        path: '/api/v1/paciente-diagnosticos/{id_paciente}/{codigo_cie10}/{tipo_diagnostico}',
+        path: '/api/v1/paciente-diagnosticos/{id_paciente}/{codigo_cie10}/{tipo_diagnostico}/{id_visita}',
         summary: 'Actualizar un diagnóstico (Llave compuesta)',
         security: [['bearerAuth' => []]],
         tags: ['Paciente Diagnósticos']
@@ -75,6 +76,7 @@ class PacienteDiagnosticoController
     #[OA\Parameter(name: 'id_paciente', description: 'ID del paciente', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))]
     #[OA\Parameter(name: 'codigo_cie10', description: 'Código CIE10', in: 'path', required: true, schema: new OA\Schema(type: 'string'))]
     #[OA\Parameter(name: 'tipo_diagnostico', description: 'Tipo Diagnóstico', in: 'path', required: true, schema: new OA\Schema(type: 'string'))]
+    #[OA\Parameter(name: 'id_visita', description: 'ID de la visita', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))]
     #[OA\RequestBody(
         required: true,
         content: new OA\MediaType(
@@ -88,10 +90,10 @@ class PacienteDiagnosticoController
         )
     )]
     #[OA\Response(response: 200, description: 'Diagnóstico actualizado exitosamente')]
-    public function update(Request $request, $id_paciente, $codigo_cie10, $tipo_diagnostico, ActualizarPacienteDiagnostico $useCase)
+    public function update(Request $request, $id_paciente, $codigo_cie10, $tipo_diagnostico, $id_visita, ActualizarPacienteDiagnostico $useCase)
     {
         try {
-            $diagnostico = $useCase->execute((int)$id_paciente, $codigo_cie10, $tipo_diagnostico, $request->all());
+            $diagnostico = $useCase->execute((int)$id_paciente, $codigo_cie10, $tipo_diagnostico, (int)$id_visita, $request->all());
             return response()->json(['message' => 'Diagnóstico actualizado exitosamente', 'data' => $diagnostico], 200);
         } catch (\Exception $e) {
             $status = $e->getCode() ?: 400;
@@ -101,7 +103,7 @@ class PacienteDiagnosticoController
     }
 
     #[OA\Delete(
-        path: '/api/v1/paciente-diagnosticos/{id_paciente}/{codigo_cie10}/{tipo_diagnostico}',
+        path: '/api/v1/paciente-diagnosticos/{id_paciente}/{codigo_cie10}/{tipo_diagnostico}/{id_visita}',
         summary: 'Eliminar un diagnóstico (Llave compuesta)',
         security: [['bearerAuth' => []]],
         tags: ['Paciente Diagnósticos']
@@ -109,11 +111,12 @@ class PacienteDiagnosticoController
     #[OA\Parameter(name: 'id_paciente', description: 'ID del paciente', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))]
     #[OA\Parameter(name: 'codigo_cie10', description: 'Código CIE10', in: 'path', required: true, schema: new OA\Schema(type: 'string'))]
     #[OA\Parameter(name: 'tipo_diagnostico', description: 'Tipo Diagnóstico', in: 'path', required: true, schema: new OA\Schema(type: 'string'))]
+    #[OA\Parameter(name: 'id_visita', description: 'ID de la visita', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))]
     #[OA\Response(response: 200, description: 'Diagnóstico eliminado exitosamente')]
-    public function destroy($id_paciente, $codigo_cie10, $tipo_diagnostico, EliminarPacienteDiagnostico $useCase)
+    public function destroy($id_paciente, $codigo_cie10, $tipo_diagnostico, $id_visita, EliminarPacienteDiagnostico $useCase)
     {
         try {
-            $useCase->execute((int)$id_paciente, $codigo_cie10, $tipo_diagnostico);
+            $useCase->execute((int)$id_paciente, $codigo_cie10, $tipo_diagnostico, (int)$id_visita);
             return response()->json(['message' => 'Diagnóstico eliminado exitosamente'], 200);
         } catch (\Exception $e) {
             $status = $e->getCode() ?: 400;

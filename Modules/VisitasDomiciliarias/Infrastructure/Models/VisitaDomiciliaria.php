@@ -23,6 +23,11 @@ class VisitaDomiciliaria extends Model
         'longitud_checkout',
         'estado',
         'motivo_cancelacion',
-        'observaciones'
+        'observaciones',
+        'codigo_ingreso',
+        'tipo_atencion_ext',
+        'servicio_tipo',
+        'remitido_a',
+        'id_servicio'
     ];
 }

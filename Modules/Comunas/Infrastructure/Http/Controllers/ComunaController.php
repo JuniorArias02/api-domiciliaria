@@ -7,6 +7,7 @@ use Modules\Comunas\Application\UseCases\CrearComuna;
 use Modules\Comunas\Application\UseCases\ActualizarComuna;
 use Modules\Comunas\Application\UseCases\EliminarComuna;
 use Modules\Comunas\Application\UseCases\ListarComunas;
+use Modules\Comunas\Application\UseCases\ObtenerComunasPorZona;
 use OpenApi\Attributes as OA;
 
 class ComunaController
@@ -22,6 +23,26 @@ class ComunaController
     {
         try {
             $comunas = $useCase->execute();
+            return response()->json(['data' => $comunas], 200);
+        } catch (\Exception $e) {
+            $status = $e->getCode() ?: 400;
+            $status = $status >= 400 && $status < 600 ? $status : 400;
+            return response()->json(['error' => $e->getMessage()], $status);
+        }
+    }
+
+    #[OA\Get(
+        path: '/api/v1/comunas/zona/{id_zona}',
+        summary: 'Listar comunas por zona',
+        security: [['bearerAuth' => []]],
+        tags: ['Comunas']
+    )]
+    #[OA\Parameter(name: 'id_zona', description: 'ID de la zona', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))]
+    #[OA\Response(response: 200, description: 'Listado de comunas filtradas por zona')]
+    public function obtenerPorZona(int $id_zona, ObtenerComunasPorZona $useCase)
+    {
+        try {
+            $comunas = $useCase->execute($id_zona);
             return response()->json(['data' => $comunas], 200);
         } catch (\Exception $e) {
             $status = $e->getCode() ?: 400;

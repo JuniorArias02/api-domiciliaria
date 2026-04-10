@@ -1,0 +1,65 @@
+Field	Type	Null	Key	Default	Extra
+id_paciente	int unsigned	NO	PRI	NULL	auto_increment
+tipo_documento	enum('CC','TI','CE','PA','RC','MS','AS')	NO		CC	
+identificacion	varchar(20)	NO	UNI	NULL	
+nombre_completo	varchar(200)	NO		NULL	
+fecha_nacimiento	date	NO		NULL	
+sexo	enum('M','F','N')	NO		NULL	
+telefono	varchar(50)	YES		NULL	
+email	varchar(150)	YES		NULL	
+id_aseguradora	int unsigned	NO	MUL	NULL	
+regimen	varchar(50)	NO		CONTRIBUTIVO	
+id_madrina	int unsigned	YES	MUL	NULL	
+fecha_ingreso	date	YES		NULL	
+direccion	varchar(255)	NO		NULL	
+id_barrio	int unsigned	YES	MUL	NULL	
+latitud	decimal(10,8)	YES	MUL	NULL	
+longitud	decimal(11,8)	YES		NULL	
+url_google_maps	text	YES		NULL	
+estado	enum('ACTIVO','INACTIVO','EGRESADO','FALLECIDO','SUSPENDIDO')	NO	MUL	ACTIVO	
+created_at	timestamp	NO		CURRENT_TIMESTAMP	DEFAULT_GENERATED
+updated_at	timestamp	NO		CURRENT_TIMESTAMP	DEFAULT_GENERATED on update CURRENT_TIMESTAMP
+Field	Type	Null	Key	Default	Extra
+id_paciente	int unsigned	NO	PRI	NULL	
+codigo_cie10	varchar(10)	NO	PRI	NULL	
+tipo_diagnostico	enum('DOMICILIARIO','RIESGO_CARDIOVASCULAR','COMORBILIDAD','SECUNDARIO')	NO	PRI	DOMICILIARIO	
+es_principal	tinyint(1)	NO		0	
+fecha_registro	date	YES		NULL	
+observacion	varchar(500)	YES		NULL	
+Field	Type	Null	Key	Default	Extra
+id_visita	int unsigned	NO	PRI	NULL	auto_increment
+id_orden_asociada	int unsigned	YES	MUL	NULL	
+id_paciente	int unsigned	NO	MUL	NULL	
+id_personal	int unsigned	NO	MUL	NULL	
+id_especialidad	int unsigned	NO	MUL	NULL	
+fecha_programada	datetime	NO	MUL	NULL	
+id_usuario_programa	int unsigned	YES	MUL	NULL	
+fecha_realizada	datetime	YES		NULL	
+latitud_checkin	decimal(10,8)	YES		NULL	
+longitud_checkin	decimal(11,8)	YES		NULL	
+latitud_checkout	decimal(10,8)	YES		NULL	
+longitud_checkout	decimal(11,8)	YES		NULL	
+estado	enum('PROGRAMADA','COMPLETADA','CANCELADA','REPROGRAMADA','NO_ATENDIDA')	NO	MUL	PROGRAMADA	
+motivo_cancelacion	varchar(255)	YES		NULL	
+observaciones	text	YES		NULL	
+created_at	timestamp	NO		CURRENT_TIMESTAMP	DEFAULT_GENERATED
+updated_at	timestamp	NO		CURRENT_TIMESTAMP	DEFAULT_GENERATED on update CURRENT_TIMESTAMP
+Field	Type	Null	Key	Default	Extra
+id_aseguradora	int unsigned	NO	PRI	NULL	auto_increment
+nombre	varchar(100)	NO	UNI	NULL	
+codigo_habilitacion	varchar(20)	YES		NULL	
+activa	tinyint(1)	NO		1	
+created_at	timestamp	NO		CURRENT_TIMESTAMP	DEFAULT_GENERATED
+Field	Type	Null	Key	Default	Extra
+id_personal	int unsigned	NO	PRI	NULL	auto_increment
+id_cargo	int unsigned	NO	MUL	NULL	
+id_especialidad	int unsigned	YES	MUL	NULL	
+nombre_completo	varchar(250)	NO	MUL	NULL	
+numero_documento	varchar(20)	YES	UNI	NULL	
+tipo_documento	varchar(10)	YES		CC	
+tarjeta_profesional	varchar(50)	YES		NULL	
+telefono	varchar(20)	YES		NULL	
+email	varchar(150)	YES		NULL	
+estado	tinyint(1)	NO		1	
+created_at	timestamp	NO		CURRENT_TIMESTAMP	DEFAULT_GENERATED
+updated_at	timestamp	NO		CURRENT_TIMESTAMP	DEFAULT_GENERATED on update CURRENT_TIMESTAMP

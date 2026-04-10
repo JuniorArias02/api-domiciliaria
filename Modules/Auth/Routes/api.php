@@ -9,7 +9,7 @@ use Modules\Auth\Infrastructure\Http\Controllers\AuthController;
 |--------------------------------------------------------------------------
 */
 
-Route::prefix('v1/auth')->name('auth.')->group(function () {
+Route::prefix('auth')->name('auth.')->group(function () {
 
     // Públicas
     Route::post('login', [AuthController::class, 'login'])->name('login');

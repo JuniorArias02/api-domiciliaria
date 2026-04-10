@@ -23,4 +23,7 @@ return [
     Modules\Laboratorios\Providers\LaboratorioServiceProvider::class,
     Modules\Telexperticias\Providers\TelexperticiaServiceProvider::class,
     Modules\Especialidades\Providers\EspecialidadServiceProvider::class,
+    Modules\Servicios\Providers\ServicioServiceProvider::class,
+    Modules\Mapas\Providers\MapaServiceProvider::class,
+    Modules\Dashboard\Providers\DashboardServiceProvider::class,
 ];
