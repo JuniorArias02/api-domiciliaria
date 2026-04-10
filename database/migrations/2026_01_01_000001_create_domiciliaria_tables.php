@@ -120,6 +120,8 @@ return new class extends Migration
             $table->date('fecha_ingreso')->nullable();
             $table->string('direccion', 255);
             $table->unsignedInteger('id_barrio')->nullable();
+            $table->unsignedInteger('id_comuna')->nullable();
+            $table->integer('orden_mapa')->default(0)->nullable();
             $table->decimal('latitud', 10, 8)->nullable();
             $table->decimal('longitud', 11, 8)->nullable();
             $table->text('url_google_maps')->nullable();

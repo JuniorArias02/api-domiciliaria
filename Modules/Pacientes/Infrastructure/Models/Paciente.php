@@ -24,6 +24,7 @@ class Paciente extends Model
         'direccion',
         'id_barrio',
         'id_comuna',
+        'orden_mapa',
         'latitud',
         'longitud',
         'url_google_maps',

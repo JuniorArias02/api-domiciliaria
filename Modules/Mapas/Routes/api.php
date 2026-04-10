@@ -13,5 +13,7 @@ Route::prefix('mapas/pacientes')->middleware('auth:api')->group(function () {
 Route::prefix('mapas')->middleware('auth:api')->group(function () {
     Route::get('/rutas-visitas', [MapaController::class, 'getRutaVisitas']);
     Route::get('/rutas-optimizadas', [MapaController::class, 'getRutasOptimizadas']);
+    Route::get('/rutas-optimizadas-orden', [MapaController::class, 'getRutasOptimizadasPorOrden']);
+    Route::get('/rutas-optimizadas-cercania', [MapaController::class, 'getRutasOptimizadasPorCercania']);
     Route::get('/comunas/{id}/pacientes', [MapaController::class, 'getPacientesPorComuna']);
 });

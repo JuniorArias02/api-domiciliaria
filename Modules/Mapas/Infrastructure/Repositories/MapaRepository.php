@@ -278,10 +278,8 @@ class MapaRepository implements MapaRepositoryInterface
         if (empty($pendientes)) return [];
 
         // 3. Algoritmo de Optimización Geográfica (Vecino más cercano)
-        // Agrupamos por profesional primero
+        // Agrupamos por profesional primero y luego ordenamos por proximidad
         $proyectosFinales = [];
-        $visitasPorDia = [];
-        $primerDia = "$anio-$mes-01";
 
         $porProfesional = collect($pendientes)->groupBy('id_personal');
 
@@ -289,7 +287,7 @@ class MapaRepository implements MapaRepositoryInterface
             $rutaOrdenada = [];
             $lista = $pacientesPro->values()->toArray();
 
-            // Empezamos por el primer paciente de la lista
+            // 3. Proximidad Cercana (Vecino más cercano) para crear el MEGA LISTADO
             $actual = array_shift($lista);
             $rutaOrdenada[] = $actual;
 
@@ -314,15 +312,19 @@ class MapaRepository implements MapaRepositoryInterface
                 array_splice($lista, $mejorIndice, 1);
             }
 
-            // 4. Asignación a días de semana en bloques de 8
-            foreach ($rutaOrdenada as $visita) {
-                $fechaAsignada = $this->obtenerPrimerDiaSemanaDisponible($proId, $primerDia, $visitasPorDia);
-                
-                $visita->fecha_proyectada = $fechaAsignada;
-                $visitasPorDia[$proId][$fechaAsignada] = ($visitasPorDia[$proId][$fechaAsignada] ?? 0) + 1;
-                $visita->orden_visita = $visitasPorDia[$proId][$fechaAsignada];
-                
-                $proyectosFinales[] = $visita;
+            // 4. Fragmentación en grupos de 8 (Días simulados)
+            $grupos = array_chunk($rutaOrdenada, 8);
+            
+            foreach ($grupos as $idxGrupo => $grupo) {
+                // Día simulado dentro del mes seleccionado
+                $dia = $idxGrupo + 1;
+                $fechaSimulada = sprintf('%04d-%02d-%02d', $anio, $mes, $dia);
+
+                foreach ($grupo as $idxVisita => $visita) {
+                    $visita->fecha_proyectada = $fechaSimulada;
+                    $visita->orden_visita = $idxVisita + 1;
+                    $proyectosFinales[] = $visita;
+                }
             }
         }
 
@@ -338,25 +340,223 @@ class MapaRepository implements MapaRepositoryInterface
     }
 
     /**
-     * Busca el primer día entre semana (Lunes-Viernes) que tenga cupo disponible.
+     * Optimiza las rutas del mes basándose estrictamente en el campo orden_mapa de los pacientes.
+     * Este método ignora la cercanía geográfica calculada y respeta el orden numérico asignado
+     * manualmente a cada paciente en su respectiva comuna.
      */
-    private function obtenerPrimerDiaSemanaDisponible($proId, $fechaInicio, &$visitasPorDia)
+    public function optimizarRutasMesMetodoOrden(array $filtros)
     {
-        $fecha = $fechaInicio;
-        
-        while (true) {
-            $diaSemana = date('N', strtotime($fecha));
-            
-            if ($diaSemana >= 6) {
-                $fecha = date('Y-m-d', strtotime($fecha . ' next monday'));
-                continue;
-            }
-            
-            if (($visitasPorDia[$proId][$fecha] ?? 0) < 8) {
-                return $fecha;
-            }
-            
-            $fecha = date('Y-m-d', strtotime($fecha . ' +1 day'));
+        $mes = $filtros['mes'] ?? date('m');
+        $anio = $filtros['anio'] ?? date('Y');
+
+        // 1. Obtener la última visita de cada paciente
+        $ultimaVisita = DB::table('visitas_domiciliarias')
+            ->select('id_paciente', DB::raw('MAX(fecha_realizada) as ultima_fecha'), 'id_personal')
+            ->where('estado', 'COMPLETADA')
+            ->groupBy('id_paciente', 'id_personal');
+
+        // 2. Query base de pacientes con órdenes vigentes
+        $query = DB::table('ordenes_medicas as om')
+            ->join('pacientes as p', 'om.id_paciente', '=', 'p.id_paciente')
+            ->leftJoinSub($ultimaVisita, 'uv', function ($join) {
+                $join->on('om.id_paciente', '=', 'uv.id_paciente');
+            })
+            ->leftJoin('personal as per', 'uv.id_personal', '=', 'per.id_personal')
+            ->select(
+                'p.id_paciente',
+                'p.nombre_completo as nombre_paciente',
+                'p.latitud',
+                'p.longitud',
+                'p.direccion',
+                'p.id_comuna',
+                'p.orden_mapa',
+                'per.id_personal',
+                'per.nombre_completo as nombre_profesional',
+                'om.id_orden',
+                'om.frecuencia_dias',
+                DB::raw("DATE_ADD(COALESCE(uv.ultima_fecha, om.fecha_orden), INTERVAL om.frecuencia_dias DAY) as fecha_proyectada")
+            )
+            ->where('om.estado', 'VIGENTE')
+            ->whereNotNull('per.id_personal');
+
+        // Filtro por Mes y Año sobre la fecha proyectada
+        $query->whereRaw("MONTH(DATE_ADD(COALESCE(uv.ultima_fecha, om.fecha_orden), INTERVAL om.frecuencia_dias DAY)) = ?", [$mes])
+              ->whereRaw("YEAR(DATE_ADD(COALESCE(uv.ultima_fecha, om.fecha_orden), INTERVAL om.frecuencia_dias DAY)) = ?", [$anio]);
+
+        if (!empty($filtros['id_personal'])) {
+            $query->where('per.id_personal', $filtros['id_personal']);
         }
+
+        // ORDENAMIENTO ESTRICTO por orden_mapa
+        $query->orderBy('p.orden_mapa', 'ASC');
+
+        $pendientes = $query->get()->toArray();
+        if (empty($pendientes)) return [];
+
+        // 3. Distribución en calendario (Días diferentes para órdenes diferentes)
+        $proyectosFinales = [];
+        $primerDiaMes = "$anio-$mes-01";
+
+        // Agrupamos por profesional para manejar sus calendarios individuales
+        $porProfesional = collect($pendientes)->groupBy('id_personal');
+
+        foreach ($porProfesional as $proId => $pacientesPro) {
+            // Agrupamos por orden_mapa y ordenamos las llaves
+            $gruposPorOrden = $pacientesPro->groupBy('orden_mapa')->sortKeys();
+            
+            $fechaPuntero = $primerDiaMes;
+
+            foreach ($gruposPorOrden as $ordenValue => $visitasGrupo) {
+                // Obtenemos el siguiente día hábil disponible para este grupo
+                $fechaAsignada = $this->obtenerSiguienteDiaHabil($fechaPuntero);
+                
+                $contadorEnDia = 1;
+                foreach ($visitasGrupo as $visita) {
+                    $visita->fecha_proyectada = $fechaAsignada;
+                    // El orden dentro del día sigue siendo secuencial
+                    $visita->orden_visita = $contadorEnDia++; 
+                    $proyectosFinales[] = $visita;
+                }
+
+                // IMPORTANTE: El siguiente número de orden DEBE ir en un día diferente
+                $fechaPuntero = date('Y-m-d', strtotime($fechaAsignada . ' +1 day'));
+            }
+        }
+
+        return $proyectosFinales;
+    }
+
+    /**
+     * Organiza rutas basadas en proximidad geográfica con un mínimo de 8 pacientes.
+     * 1. Filtra por profesional y mes proyectado.
+     * 2. Calcula cercanía usando lat/long.
+     * 3. Agrupa en bloques de mínimo 8 pacientes.
+     */
+    public function optimizarRutasMesCercania(array $filtros)
+    {
+        $mes = $filtros['mes'] ?? date('m');
+        $anio = $filtros['anio'] ?? date('Y');
+        $idPersonal = $filtros['id_personal'] ?? null;
+
+        if (!$idPersonal) {
+            throw new \InvalidArgumentException("Debe seleccionar un profesional médico.");
+        }
+
+        // 1. Obtener la última visita de cada paciente (para el cálculo de frecuencia)
+        $ultimaVisita = DB::table('visitas_domiciliarias')
+            ->select('id_paciente', DB::raw('MAX(fecha_realizada) as ultima_fecha'), 'id_personal')
+            ->where('estado', 'COMPLETADA')
+            ->groupBy('id_paciente', 'id_personal');
+
+        // 2. Query de pacientes que TIENEN visita en este mes según frecuencia
+        $query = DB::table('ordenes_medicas as om')
+            ->join('pacientes as p', 'om.id_paciente', '=', 'p.id_paciente')
+            ->leftJoinSub($ultimaVisita, 'uv', function ($join) {
+                $join->on('om.id_paciente', '=', 'uv.id_paciente');
+            })
+            ->join('personal as per', function($join) use ($idPersonal) {
+                // Filtramos por el profesional vinculado a la última visita o al que se desea asignar
+                $join->on('uv.id_personal', '=', 'per.id_personal');
+            })
+            ->select(
+                'p.id_paciente',
+                'p.nombre_completo as nombre_paciente',
+                'p.latitud',
+                'p.longitud',
+                'p.direccion',
+                'per.id_personal',
+                'per.nombre_completo as nombre_profesional',
+                'om.id_orden',
+                'om.frecuencia_dias',
+                DB::raw("DATE_ADD(COALESCE(uv.ultima_fecha, om.fecha_orden), INTERVAL om.frecuencia_dias DAY) as fecha_proyectada")
+            )
+            ->where('om.estado', 'VIGENTE')
+            ->where('per.id_personal', $idPersonal)
+            ->whereNotNull('p.latitud')
+            ->whereNotNull('p.longitud');
+
+        // Filtro estricto por Mes y Año sobre la fecha proyectada
+        $query->whereRaw("MONTH(DATE_ADD(COALESCE(uv.ultima_fecha, om.fecha_orden), INTERVAL om.frecuencia_dias DAY)) = ?", [$mes])
+              ->whereRaw("YEAR(DATE_ADD(COALESCE(uv.ultima_fecha, om.fecha_orden), INTERVAL om.frecuencia_dias DAY)) = ?", [$anio]);
+
+        $pacientesDisponibles = $query->get()->toArray();
+        if (empty($pacientesDisponibles)) return [];
+
+        // 3. Generar lista de proximidad geográfica (Vecino más cercano)
+        $rutaOrdenada = [];
+        $pendientes = $pacientesDisponibles;
+        
+        // Empezamos con el primero de la lista
+        $actual = array_shift($pendientes);
+        $rutaOrdenada[] = $actual;
+
+        while (!empty($pendientes)) {
+            $mejorIndice = null;
+            $menorDistancia = INF;
+
+            foreach ($pendientes as $i => $candidato) {
+                $dist = $this->calcularDistancia(
+                    $actual->latitud, $actual->longitud,
+                    $candidato->latitud, $candidato->longitud
+                );
+
+                if ($dist < $menorDistancia) {
+                    $menorDistancia = $dist;
+                    $mejorIndice = $i;
+                }
+            }
+
+            $actual = $pendientes[$mejorIndice];
+            $rutaOrdenada[] = $actual;
+            array_splice($pendientes, $mejorIndice, 1);
+        }
+
+        // 4. Construir rutas organizadas con MÍNIMO 8 pacientes
+        $rutasFinales = [];
+        $totalPacientes = count($rutaOrdenada);
+        
+        // Si el total es menor a 8, generamos una sola ruta (aunque no cumpla el mínimo, es lo que hay)
+        if ($totalPacientes < 8) {
+            foreach ($rutaOrdenada as $idx => $p) {
+                $p->numero_ruta = 1;
+                $p->orden_en_ruta = $idx + 1;
+                $rutasFinales[] = $p;
+            }
+        } else {
+            // Dividimos intentando que cada bloque sea de 8. 
+            // Si el sobrante es < 8, lo redistribuimos o lo dejamos como la "última gran ruta"
+            $chunks = array_chunk($rutaOrdenada, 8);
+            
+            // Si el último chunk tiene menos de 8, lo fusionamos con el penúltimo para mantener el mínimo
+            if (count($chunks) > 1 && count(end($chunks)) < 8) {
+                $ultimo = array_pop($chunks);
+                $penultimo = array_pop($chunks);
+                $fusion = array_merge($penultimo, $ultimo);
+                $chunks[] = $fusion;
+            }
+
+            foreach ($chunks as $idxRuta => $grupo) {
+                foreach ($grupo as $idxVisita => $visita) {
+                    $visita->numero_ruta = $idxRuta + 1;
+                    $visita->orden_en_ruta = $idxVisita + 1;
+                    /** 
+                     * IMPORTANTE: No asignamos fecha específica para no ignorar el requerimiento 
+                     * de "ignorar días específicos", solo representamos el orden en el mega listado.
+                     */
+                    $rutasFinales[] = $visita;
+                }
+            }
+        }
+
+        return $rutasFinales;
+    }
+
+
+
+
+
+    public function optimizarRutasMetodosTres(array $filtros)
+    {
+        // esperando instrucciones
     }
 }

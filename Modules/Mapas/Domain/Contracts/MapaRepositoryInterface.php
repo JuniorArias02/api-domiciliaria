@@ -38,4 +38,14 @@ interface MapaRepositoryInterface
      * Predice y optimiza las rutas del mes basado en frecuencia y última visita.
      */
     public function optimizarRutasMes(array $filtros);
+
+    /**
+     * Optimiza las rutas del mes basándose estrictamente en el campo orden_mapa de los pacientes.
+     */
+    public function optimizarRutasMesMetodoOrden(array $filtros);
+
+    /**
+     * Organiza rutas basadas en proximidad geográfica con un mínimo de 8 pacientes.
+     */
+    public function optimizarRutasMesCercania(array $filtros);
 }

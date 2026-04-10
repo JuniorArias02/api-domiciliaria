@@ -8,6 +8,8 @@ use Modules\Mapas\Application\UseCases\ObtenerTodosLosPuntosMapa;
 use Modules\Mapas\Application\UseCases\ObtenerDetallePunto;
 use Modules\Mapas\Application\UseCases\ObtenerPacientesPorComuna;
 use Modules\Mapas\Application\UseCases\OptimizarRutasMensuales;
+use Modules\Mapas\Application\UseCases\OptimizarRutasMesMetodoOrden;
+use Modules\Mapas\Application\UseCases\OptimizarRutasMesCercania;
 use OpenApi\Attributes as OA;
 
 class MapaController
@@ -222,6 +224,82 @@ class MapaController
                 'success' => true,
                 'data'    => $resultado
             ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+    }
+    #[OA\Get(
+        path: '/api/v1/mapas/rutas-optimizadas-orden',
+        summary: 'Optimizar rutas mensuales basándose en el campo orden_mapa de los pacientes',
+        security: [['bearerAuth' => []]],
+        tags: ['Mapas']
+    )]
+    #[OA\Parameter(name: 'mes', description: 'Mes a proyectar (1-12)', in: 'query', schema: new OA\Schema(type: 'integer'))]
+    #[OA\Parameter(name: 'anio', description: 'Año a proyectar', in: 'query', schema: new OA\Schema(type: 'integer'))]
+    #[OA\Parameter(name: 'id_personal', description: 'Filtrar por profesional', in: 'query', schema: new OA\Schema(type: 'integer'))]
+    #[OA\Response(response: 200, description: 'Rutas proyectadas ordenadas por orden_mapa')]
+    public function getRutasOptimizadasPorOrden(Request $request, OptimizarRutasMesMetodoOrden $useCase)
+    {
+        try {
+            $filtros = $request->only(['mes', 'anio', 'id_personal']);
+            $resultado = $useCase->execute($filtros);
+
+            return response()->json([
+                'success' => true,
+                'data'    => $resultado
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+    }
+
+    #[OA\Get(
+        path: '/api/v1/mapas/rutas-optimizadas-cercania',
+        summary: 'Optimizar rutas mensuales basándose en cercanía geográfica (Mínimo 8 pacientes)',
+        security: [['bearerAuth' => []]],
+        tags: ['Mapas']
+    )]
+    #[OA\Parameter(name: 'mes', description: 'Mes a proyectar (1-12)', in: 'query', schema: new OA\Schema(type: 'integer'))]
+    #[OA\Parameter(name: 'anio', description: 'Año a proyectar', in: 'query', schema: new OA\Schema(type: 'integer'))]
+    #[OA\Parameter(name: 'id_personal', description: 'ID del profesional médico (Requerido)', in: 'query', required: true, schema: new OA\Schema(type: 'integer'))]
+    #[OA\Response(
+        response: 200, 
+        description: 'Mega listado de rutas organizadas por cercanía',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'success', type: 'boolean', example: true),
+                new OA\Property(property: 'total', type: 'integer', example: 24),
+                new OA\Property(
+                    property: 'data',
+                    type: 'array',
+                    items: new OA\Items(
+                        properties: [
+                            new OA\Property(property: 'id_paciente', type: 'integer'),
+                            new OA\Property(property: 'nombre_paciente', type: 'string'),
+                            new OA\Property(property: 'direccion', type: 'string'),
+                            new OA\Property(property: 'latitud', type: 'string'),
+                            new OA\Property(property: 'longitud', type: 'string'),
+                            new OA\Property(property: 'numero_ruta', type: 'integer', description: 'Identificador del bloque/día de ruta'),
+                            new OA\Property(property: 'orden_en_ruta', type: 'integer', description: 'Posición secuencial dentro de esa ruta')
+                        ]
+                    )
+                )
+            ]
+        )
+    )]
+    public function getRutasOptimizadasPorCercania(Request $request, OptimizarRutasMesCercania $useCase)
+    {
+        try {
+            $filtros = $request->only(['mes', 'anio', 'id_personal']);
+            $resultado = $useCase->execute($filtros);
+
+            return response()->json([
+                'success' => true,
+                'total'   => count($resultado),
+                'data'    => $resultado
+            ], 200);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         }
