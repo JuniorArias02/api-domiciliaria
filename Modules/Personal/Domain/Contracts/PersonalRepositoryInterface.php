@@ -9,4 +9,5 @@ interface PersonalRepositoryInterface
     public function eliminar(int $id);
     public function obtenerPorId(int $id);
     public function listar();
+    public function buscar(string $query, int $limit = 5);
 }

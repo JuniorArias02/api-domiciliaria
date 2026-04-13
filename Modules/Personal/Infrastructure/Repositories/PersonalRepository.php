@@ -42,4 +42,12 @@ class PersonalRepository implements PersonalRepositoryInterface
     {
         return Personal::all();
     }
+
+    public function buscar(string $query, int $limit = 5)
+    {
+        return Personal::where('nombre_completo', 'like', "%{$query}%")
+            ->orWhere('numero_documento', 'like', "%{$query}%")
+            ->limit($limit)
+            ->get();
+    }
 }

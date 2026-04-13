@@ -7,6 +7,7 @@ use Modules\Personal\Application\UseCases\CrearPersonal;
 use Modules\Personal\Application\UseCases\ActualizarPersonal;
 use Modules\Personal\Application\UseCases\EliminarPersonal;
 use Modules\Personal\Application\UseCases\ListarPersonal;
+use Modules\Personal\Application\UseCases\BuscarPersonalUseCase;
 use OpenApi\Attributes as OA;
 
 class PersonalController
@@ -118,6 +119,27 @@ class PersonalController
             $status = $e->getCode() ?: 400;
             $status = $status >= 400 && $status < 600 ? $status : 400;
             return response()->json(['error' => $e->getMessage()], $status);
+        }
+    }
+
+    #[OA\Get(
+        path: '/api/v1/personal/buscar',
+        summary: 'Buscar personal por nombre o número de documento con límite',
+        security: [['bearerAuth' => []]],
+        tags: ['Personal']
+    )]
+    #[OA\Parameter(name: 'q', description: 'Cadena de búsqueda', in: 'query', required: true, schema: new OA\Schema(type: 'string'))]
+    #[OA\Parameter(name: 'limit', description: 'Número máximo de resultados (por defecto 5)', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 5))]
+    #[OA\Response(response: 200, description: 'Resultados de la búsqueda')]
+    public function search(Request $request, BuscarPersonalUseCase $useCase)
+    {
+        try {
+            $query = $request->query('q', '');
+            $limit = (int) $request->query('limit', 5);
+            $personal = $useCase->execute($query, $limit);
+            return response()->json(['data' => $personal], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
         }
     }
 }

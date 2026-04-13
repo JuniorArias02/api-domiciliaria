@@ -2876,6 +2876,46 @@
                 ]
             }
         },
+        "/api/v1/personal/buscar": {
+            "get": {
+                "tags": [
+                    "Personal"
+                ],
+                "summary": "Buscar personal por nombre o número de documento con límite",
+                "operationId": "4e0dcbb71714e81c60a2f35de4457b9b",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Cadena de búsqueda",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Número máximo de resultados (por defecto 5)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 5
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Resultados de la búsqueda"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v1/servicios": {
             "get": {
                 "tags": [
