@@ -231,20 +231,23 @@ class MapaRepository implements MapaRepositoryInterface
      */
     public function optimizarRutasMes(array $filtros)
     {
-        $mes = $filtros['mes'] ?? date('m');
-        $anio = $filtros['anio'] ?? date('Y');
-
-        // 1. Obtener la última visita de cada paciente
-        $ultimaVisita = DB::table('visitas_domiciliarias')
-            ->select('id_paciente', DB::raw('MAX(fecha_realizada) as ultima_fecha'), 'id_personal')
+        // 1. Obtener el ID de la última visita de cada paciente para poder traer los datos de esa visita específica
+        $ultimaVisitaId = DB::table('visitas_domiciliarias')
+            ->select('id_paciente', DB::raw('MAX(id_visita) as max_id'))
             ->where('estado', 'COMPLETADA')
-            ->groupBy('id_paciente', 'id_personal');
+            ->groupBy('id_paciente');
 
-        // 2. Query base de pacientes con órdenes vigentes
-        $query = DB::table('ordenes_medicas as om')
-            ->join('pacientes as p', 'om.id_paciente', '=', 'p.id_paciente')
+        $ultimaVisita = DB::table('visitas_domiciliarias as vd')
+            ->joinSub($ultimaVisitaId, 'uv_id', function($join) {
+                $join->on('vd.id_visita', '=', 'uv_id.max_id');
+            })
+            ->select('vd.id_paciente', 'vd.fecha_realizada', 'vd.id_personal');
+
+        // 2. Query base de pacientes con su última información (sin importar fecha/año)
+        $query = DB::table('pacientes as p')
+            ->join('ordenes_medicas as om', 'p.id_paciente', '=', 'om.id_paciente')
             ->leftJoinSub($ultimaVisita, 'uv', function ($join) {
-                $join->on('om.id_paciente', '=', 'uv.id_paciente');
+                $join->on('p.id_paciente', '=', 'uv.id_paciente');
             })
             ->leftJoin('personal as per', 'uv.id_personal', '=', 'per.id_personal')
             ->select(
@@ -255,19 +258,33 @@ class MapaRepository implements MapaRepositoryInterface
                 'p.direccion',
                 'p.id_comuna',
                 'p.id_barrio',
+                'p.telefono',
                 'per.id_personal',
                 'per.nombre_completo as nombre_profesional',
                 'om.id_orden',
-                'om.frecuencia_dias',
-                DB::raw("DATE_ADD(COALESCE(uv.ultima_fecha, om.fecha_orden), INTERVAL om.frecuencia_dias DAY) as fecha_proyectada")
+                'om.frecuencia_dias'
             )
             ->where('om.estado', 'VIGENTE')
             ->whereNotNull('p.latitud')
             ->whereNotNull('p.longitud');
 
-        // Filtro por Mes y Año
-        $query->whereRaw("MONTH(DATE_ADD(COALESCE(uv.ultima_fecha, om.fecha_orden), INTERVAL om.frecuencia_dias DAY)) = ?", [$mes])
-              ->whereRaw("YEAR(DATE_ADD(COALESCE(uv.ultima_fecha, om.fecha_orden), INTERVAL om.frecuencia_dias DAY)) = ?", [$anio]);
+        // Para evitar que un paciente salga 2 veces si tiene 2 órdenes vigentes,
+        // agrupamos por paciente (esto es lo que causaba el error de ONLY_FULL_GROUP_BY)
+        // La solución es agrupar por todas las columnas que estamos seleccionando.
+        $query->groupBy(
+            'p.id_paciente',
+            'p.nombre_completo',
+            'p.latitud',
+            'p.longitud',
+            'p.direccion',
+            'p.id_comuna',
+            'p.id_barrio',
+            'p.telefono',
+            'per.id_personal',
+            'per.nombre_completo',
+            'om.id_orden',
+            'om.frecuencia_dias'
+        );
 
         if (!empty($filtros['id_personal'])) {
             $query->where('per.id_personal', $filtros['id_personal']);
@@ -276,54 +293,52 @@ class MapaRepository implements MapaRepositoryInterface
         $pendientes = $query->get()->toArray();
         if (empty($pendientes)) return [];
 
-        // 3. Algoritmo de Optimización Geográfica (Vecino más cercano)
-        // Agrupamos por profesional primero y luego ordenamos por proximidad
+        // 3. Algoritmo de Optimización Geográfica MEGA GLOBAL (Vecino más cercano)
         $proyectosFinales = [];
+        $rutaOrdenada = [];
+        $lista = $pendientes; // Lista GLOBAL, sin separar por profesor
 
-        $porProfesional = collect($pendientes)->groupBy('id_personal');
+        // Proximidad Cercana (Vecino más cercano)
+        $actual = array_shift($lista);
+        $rutaOrdenada[] = $actual;
 
-        foreach ($porProfesional as $proId => $pacientesPro) {
-            $rutaOrdenada = [];
-            $lista = $pacientesPro->values()->toArray();
+        while (!empty($lista)) {
+            $mejorIndice = null;
+            $menorDistancia = INF;
 
-            // 3. Proximidad Cercana (Vecino más cercano) para crear el MEGA LISTADO
-            $actual = array_shift($lista);
-            $rutaOrdenada[] = $actual;
+            foreach ($lista as $i => $candidato) {
+                $dist = $this->calcularDistancia(
+                    $actual->latitud, $actual->longitud,
+                    $candidato->latitud, $candidato->longitud
+                );
 
-            while (!empty($lista)) {
-                $mejorIndice = null;
-                $menorDistancia = INF;
-
-                foreach ($lista as $i => $candidato) {
-                    $dist = $this->calcularDistancia(
-                        $actual->latitud, $actual->longitud,
-                        $candidato->latitud, $candidato->longitud
-                    );
-
-                    if ($dist < $menorDistancia) {
-                        $menorDistancia = $dist;
-                        $mejorIndice = $i;
-                    }
+                if ($dist < $menorDistancia) {
+                    $menorDistancia = $dist;
+                    $mejorIndice = $i;
                 }
-
-                $actual = $lista[$mejorIndice];
-                $rutaOrdenada[] = $actual;
-                array_splice($lista, $mejorIndice, 1);
             }
 
-            // 4. Fragmentación en grupos de 8 (Días simulados)
-            $grupos = array_chunk($rutaOrdenada, 8);
-            
-            foreach ($grupos as $idxGrupo => $grupo) {
-                // Día simulado dentro del mes seleccionado
-                $dia = $idxGrupo + 1;
-                $fechaSimulada = sprintf('%04d-%02d-%02d', $anio, $mes, $dia);
+            $actual = $lista[$mejorIndice];
+            $rutaOrdenada[] = $actual;
+            array_splice($lista, $mejorIndice, 1);
+        }
 
-                foreach ($grupo as $idxVisita => $visita) {
-                    $visita->fecha_proyectada = $fechaSimulada;
-                    $visita->orden_visita = $idxVisita + 1;
-                    $proyectosFinales[] = $visita;
-                }
+        // 4. Fragmentación en grupos de 8 (Bloques lógicos generales)
+        $grupos = array_chunk($rutaOrdenada, 8);
+        
+        foreach ($grupos as $idxGrupo => $grupo) {
+            $bloqueRuta = $idxGrupo + 1;
+
+            foreach ($grupo as $idxVisita => $visita) {
+                $visita->bloque_ruta = $bloqueRuta;           // A qué conjunto de 8 pertenece
+                $visita->orden_en_ruta = $idxVisita + 1;      // 1 al 8
+                $visita->orden_global = ($idxGrupo * 8) + ($idxVisita + 1); // Posición absoluta
+                
+                // Limpieza temporal
+                $visita->latitud = (float) $visita->latitud;
+                $visita->longitud = (float) $visita->longitud;
+                
+                $proyectosFinales[] = $visita;
             }
         }
 

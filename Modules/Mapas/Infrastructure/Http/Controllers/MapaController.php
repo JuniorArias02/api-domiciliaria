@@ -206,27 +206,26 @@ class MapaController
 
     #[OA\Get(
         path: '/api/v1/mapas/rutas-optimizadas',
-        summary: 'Obtener predicción de rutas optimizadas por mes basadas en frecuencia y cercanía',
+        summary: 'Obtener mega listado de todos los pacientes, optimizado por cercanía en bloques de 8 (Sin parámetros)',
         security: [['bearerAuth' => []]],
         tags: ['Mapas']
     )]
-    #[OA\Parameter(name: 'mes', description: 'Mes a proyectar (1-12)', in: 'query', schema: new OA\Schema(type: 'integer'))]
-    #[OA\Parameter(name: 'anio', description: 'Año a proyectar', in: 'query', schema: new OA\Schema(type: 'integer'))]
-    #[OA\Response(response: 200, description: 'Rutas proyectadas optimizadas')]
+    #[OA\Response(response: 200, description: 'Mega listado de todos los pacientes iterados por cercanía de principio a fin')]
     public function getRutasOptimizadas(Request $request, OptimizarRutasMensuales $useCase)
     {
         try {
-            $filtros = $request->only(['mes', 'anio']);
-            $resultado = $useCase->execute($filtros);
+            $resultado = $useCase->execute([]);
 
             return response()->json([
                 'success' => true,
+                'total'   => count($resultado),
                 'data'    => $resultado
             ], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         }
     }
+    
     #[OA\Get(
         path: '/api/v1/mapas/rutas-optimizadas-orden',
         summary: 'Optimizar rutas mensuales basándose en el campo orden_mapa de los pacientes',
