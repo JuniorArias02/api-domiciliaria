@@ -48,4 +48,9 @@ interface MapaRepositoryInterface
      * Organiza rutas basadas en proximidad geográfica con un mínimo de 8 pacientes.
      */
     public function optimizarRutasMesCercania(array $filtros);
+
+    /**
+     * Optimiza rutas globales basadas en cercanía y frecuencia (Lógica Script Python).
+     */
+    public function optimizarRutasGlobales(array $filtros);
 }

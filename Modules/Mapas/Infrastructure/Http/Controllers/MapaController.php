@@ -10,6 +10,7 @@ use Modules\Mapas\Application\UseCases\ObtenerPacientesPorComuna;
 use Modules\Mapas\Application\UseCases\OptimizarRutasMensuales;
 use Modules\Mapas\Application\UseCases\OptimizarRutasMesMetodoOrden;
 use Modules\Mapas\Application\UseCases\OptimizarRutasMesCercania;
+use Modules\Mapas\Application\UseCases\OptimizarRutaPaciente;
 use OpenApi\Attributes as OA;
 
 class MapaController
@@ -183,15 +184,14 @@ class MapaController
         security: [['bearerAuth' => []]],
         tags: ['Mapas']
     )]
-    #[OA\Parameter(name: 'id_zona', description: 'Filtrar por Zona', in: 'query', schema: new OA\Schema(type: 'integer'))]
-    #[OA\Parameter(name: 'id_comuna', description: 'Filtrar por Comuna', in: 'query', schema: new OA\Schema(type: 'integer'))]
-    #[OA\Parameter(name: 'id_aseguradora', description: 'Filtrar por EPS', in: 'query', schema: new OA\Schema(type: 'integer'))]
-    #[OA\Parameter(name: 'estado', description: 'Filtrar por estado del paciente', in: 'query', schema: new OA\Schema(type: 'string'))]
+    #[OA\Parameter(name: 'id_comuna', description: 'Filtrar por Comuna', in: 'query', required: false, schema: new OA\Schema(type: 'integer'))]
+    #[OA\Parameter(name: 'id_aseguradora', description: 'Filtrar por EPS', in: 'query', required: false, schema: new OA\Schema(type: 'integer'))]
+    #[OA\Parameter(name: 'estado', description: 'Filtrar por estado del paciente', in: 'query', required: false, schema: new OA\Schema(type: 'string'))]
     #[OA\Response(response: 200, description: 'Lista completa de puntos coordinados para el mapa')]
     public function getAllMarkers(Request $request, ObtenerTodosLosPuntosMapa $useCase)
     {
         try {
-            $filtros = $request->only(['id_zona', 'id_comuna', 'id_aseguradora', 'estado']);
+            $filtros = $request->only(['id_comuna', 'id_aseguradora', 'estado']);
             $puntos = $useCase->execute($filtros);
             
             return response()->json([
@@ -212,12 +212,11 @@ class MapaController
     )]
     #[OA\Parameter(name: 'mes', description: 'Mes a proyectar (1-12)', in: 'query', schema: new OA\Schema(type: 'integer'))]
     #[OA\Parameter(name: 'anio', description: 'Año a proyectar', in: 'query', schema: new OA\Schema(type: 'integer'))]
-    #[OA\Parameter(name: 'id_personal', description: 'Filtrar por profesional', in: 'query', schema: new OA\Schema(type: 'integer'))]
     #[OA\Response(response: 200, description: 'Rutas proyectadas optimizadas')]
     public function getRutasOptimizadas(Request $request, OptimizarRutasMensuales $useCase)
     {
         try {
-            $filtros = $request->only(['mes', 'anio', 'id_personal']);
+            $filtros = $request->only(['mes', 'anio']);
             $resultado = $useCase->execute($filtros);
 
             return response()->json([
@@ -236,12 +235,11 @@ class MapaController
     )]
     #[OA\Parameter(name: 'mes', description: 'Mes a proyectar (1-12)', in: 'query', schema: new OA\Schema(type: 'integer'))]
     #[OA\Parameter(name: 'anio', description: 'Año a proyectar', in: 'query', schema: new OA\Schema(type: 'integer'))]
-    #[OA\Parameter(name: 'id_personal', description: 'Filtrar por profesional', in: 'query', schema: new OA\Schema(type: 'integer'))]
     #[OA\Response(response: 200, description: 'Rutas proyectadas ordenadas por orden_mapa')]
     public function getRutasOptimizadasPorOrden(Request $request, OptimizarRutasMesMetodoOrden $useCase)
     {
         try {
-            $filtros = $request->only(['mes', 'anio', 'id_personal']);
+            $filtros = $request->only(['mes', 'anio']);
             $resultado = $useCase->execute($filtros);
 
             return response()->json([
@@ -300,6 +298,57 @@ class MapaController
             ], 200);
         } catch (\InvalidArgumentException $e) {
             return response()->json(['error' => $e->getMessage()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+    }
+
+    #[OA\Get(
+        path: '/api/v1/mapas/rutas-optimizadas-global',
+        summary: 'Optimizar rutas globales por cercanía (Script Python)',
+        security: [['bearerAuth' => []]],
+        tags: ['Mapas']
+    )]
+    #[OA\Parameter(name: 'mes', description: 'Mes a proyectar (1-12)', in: 'query', schema: new OA\Schema(type: 'integer'))]
+    #[OA\Parameter(name: 'anio', description: 'Año a proyectar', in: 'query', schema: new OA\Schema(type: 'integer'))]
+    #[OA\Response(
+        response: 200, 
+        description: 'Rutas proyectadas organizadas secuencialmente por cercanía global',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'success', type: 'boolean', example: true),
+                new OA\Property(property: 'total', type: 'integer', example: 150),
+                new OA\Property(
+                    property: 'data',
+                    type: 'array',
+                    items: new OA\Items(
+                        properties: [
+                            new OA\Property(property: 'id_paciente', type: 'integer'),
+                            new OA\Property(property: 'nombre_paciente', type: 'string'),
+                            new OA\Property(property: 'direccion', type: 'string'),
+                            new OA\Property(property: 'telefono', type: 'string'),
+                            new OA\Property(property: 'latitud', type: 'number', format: 'float'),
+                            new OA\Property(property: 'longitud', type: 'number', format: 'float'),
+                            new OA\Property(property: 'fecha_proyectada', type: 'string', format: 'date'),
+                            new OA\Property(property: 'orden_global', type: 'integer', description: 'Secuencia lógica uno a uno'),
+                            new OA\Property(property: 'bloque_ruta', type: 'integer', description: 'Grupo de 8 pacientes para planeación diaria')
+                        ]
+                    )
+                )
+            ]
+        )
+    )]
+    public function getRutasGlobales(Request $request, OptimizarRutaPaciente $useCase)
+    {
+        try {
+            $filtros = $request->only(['mes', 'anio']);
+            $resultado = $useCase->execute($filtros);
+
+            return response()->json([
+                'success' => true,
+                'total'   => count($resultado),
+                'data'    => $resultado
+            ], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         }

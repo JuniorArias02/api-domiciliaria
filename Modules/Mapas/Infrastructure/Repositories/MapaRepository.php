@@ -262,7 +262,6 @@ class MapaRepository implements MapaRepositoryInterface
                 DB::raw("DATE_ADD(COALESCE(uv.ultima_fecha, om.fecha_orden), INTERVAL om.frecuencia_dias DAY) as fecha_proyectada")
             )
             ->where('om.estado', 'VIGENTE')
-            ->whereNotNull('per.id_personal')
             ->whereNotNull('p.latitud')
             ->whereNotNull('p.longitud');
 
@@ -376,8 +375,7 @@ class MapaRepository implements MapaRepositoryInterface
                 'om.frecuencia_dias',
                 DB::raw("DATE_ADD(COALESCE(uv.ultima_fecha, om.fecha_orden), INTERVAL om.frecuencia_dias DAY) as fecha_proyectada")
             )
-            ->where('om.estado', 'VIGENTE')
-            ->whereNotNull('per.id_personal');
+            ->where('om.estado', 'VIGENTE');
 
         // Filtro por Mes y Año sobre la fecha proyectada
         $query->whereRaw("MONTH(DATE_ADD(COALESCE(uv.ultima_fecha, om.fecha_orden), INTERVAL om.frecuencia_dias DAY)) = ?", [$mes])
@@ -558,5 +556,116 @@ class MapaRepository implements MapaRepositoryInterface
     public function optimizarRutasMetodosTres(array $filtros)
     {
         // esperando instrucciones
+    }
+
+    /**
+     * Lógica exacta del Script de Python (metodoUno)
+     * Optimiza rutas globales basadas en cercanía y frecuencia.
+     */
+    public function optimizarRutasGlobales(array $filtros)
+    {
+        $mes = $filtros['mes'] ?? 4;
+        $anio = $filtros['anio'] ?? 2026;
+
+        // 1. Obtener candidatos (Query del script)
+        $resultados = DB::table('pacientes as p')
+            ->join('ordenes_medicas as om', 'p.id_paciente', '=', 'om.id_paciente')
+            ->leftJoin('visitas_domiciliarias as vd', 'p.id_paciente', '=', 'vd.id_paciente')
+            ->select(
+                'p.id_paciente',
+                'p.nombre_completo as paciente',
+                'p.latitud',
+                'p.longitud',
+                'p.direccion',
+                'p.telefono',
+                'om.frecuencia_dias',
+                DB::raw('MAX(vd.fecha_realizada) as ultima_visita')
+            )
+            ->where('om.estado', 'VIGENTE')
+            ->whereNotNull('p.latitud')
+            ->whereNotNull('p.longitud')
+            ->where('p.latitud', '!=', 0)
+            ->groupBy('p.id_paciente', 'om.id_orden')
+            ->get();
+
+        $candidatos = [];
+        foreach ($resultados as $row) {
+            $frecuencia = $row->frecuencia_dias ?: 30;
+            
+            if ($row->ultima_visita) {
+                $ultima = new \DateTime($row->ultima_visita);
+            } else {
+                // Si no hay visitas previas, asumimos que debe visitarse a principio de mes (Python: ultima = datetime(anio, mes, 1) - timedelta(days=frecuencia))
+                $ultima = (new \DateTime("$anio-$mes-01"))->modify("-{$frecuencia} days");
+            }
+
+            $proxima = clone $ultima;
+            $proxima->modify("+{$frecuencia} days");
+
+            // Solo incluimos si cae en el mes/anio objetivo
+            if ((int)$proxima->format('m') == $mes && (int)$proxima->format('Y') == $anio) {
+                $candidatos[] = [
+                    "id_paciente" => $row->id_paciente,
+                    "nombre_paciente" => $row->paciente,
+                    "direccion" => $row->direccion,
+                    "telefono" => $row->telefono,
+                    "latitud" => (float)$row->latitud,
+                    "longitud" => (float)$row->longitud,
+                    "fecha_proyectada" => $proxima->format('Y-m-d')
+                ];
+            }
+        }
+
+        if (empty($candidatos)) return [];
+
+        // 2. Optimización (Vecino más cercano)
+        $ordenados = [];
+        $pendientes = $candidatos;
+        
+        $actual = array_shift($pendientes);
+        $ordenados[] = $actual;
+
+        while (!empty($pendientes)) {
+            $mejorIndice = 0;
+            $distanciaMin = $this->haversine($actual['latitud'], $actual['longitud'], $pendientes[0]['latitud'], $pendientes[0]['longitud']);
+
+            for ($i = 1; $i < count($pendientes); $i++) {
+                $dist = $this->haversine($actual['latitud'], $actual['longitud'], $pendientes[$i]['latitud'], $pendientes[$i]['longitud']);
+                if ($dist < $distanciaMin) {
+                    $distanciaMin = $dist;
+                    $mejorIndice = $i;
+                }
+            }
+
+            $actual = $pendientes[$mejorIndice];
+            $ordenados[] = $actual;
+            array_splice($pendientes, $mejorIndice, 1);
+        }
+
+        // 3. Asignar bloques de 8
+        $resultado = [];
+        foreach ($ordenados as $idx => $p) {
+            $ordenGlobal = $idx + 1;
+            $p['orden_global'] = $ordenGlobal;
+            $p['bloque_ruta'] = ceil($ordenGlobal / 8);
+            $resultado[] = $p;
+        }
+
+        return $resultado;
+    }
+
+    /**
+     * Calcula la distancia Haversine entre dos puntos (km).
+     */
+    private function haversine($lat1, $lon1, $lat2, $lon2)
+    {
+        $R = 6371;
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLon = deg2rad($lon2 - $lon1);
+        $a = sin($dLat / 2) * sin($dLat / 2) +
+             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+             sin($dLon / 2) * sin($dLon / 2);
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+        return $R * $c;
     }
 }

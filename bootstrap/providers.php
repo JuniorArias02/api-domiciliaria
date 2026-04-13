@@ -26,4 +26,5 @@ return [
     Modules\Servicios\Providers\ServicioServiceProvider::class,
     Modules\Mapas\Providers\MapaServiceProvider::class,
     Modules\Dashboard\Providers\DashboardServiceProvider::class,
+    Modules\Agenda\Providers\AgendaServiceProvider::class,
 ];

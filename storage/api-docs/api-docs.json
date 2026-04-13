@@ -15,6 +15,122 @@
         }
     ],
     "paths": {
+        "/api/v1/agenda/listado": {
+            "get": {
+                "tags": [
+                    "Agenda"
+                ],
+                "summary": "Obtener listado de órdenes/agendas con paginación dinámica",
+                "operationId": "bb1d0473c86870f765841bf5bd3ab08e",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "buscar",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "estado",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Listado paginado de agendas"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/agenda/crear": {
+            "post": {
+                "tags": [
+                    "Agenda"
+                ],
+                "summary": "Punto de entrada para programar masivamente todas las visitas derivadas de una orden",
+                "operationId": "b2d17a7ff53736e8a9aa99965cabace5",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id_paciente",
+                                    "id_especialidad",
+                                    "numero_sesiones",
+                                    "frecuencia_dias",
+                                    "fecha_inicio"
+                                ],
+                                "properties": {
+                                    "id_paciente": {
+                                        "type": "integer"
+                                    },
+                                    "id_especialidad": {
+                                        "type": "integer"
+                                    },
+                                    "numero_sesiones": {
+                                        "description": "Número total de visitas a programar.",
+                                        "type": "integer"
+                                    },
+                                    "frecuencia_dias": {
+                                        "description": "Separación en días entre cada visita.",
+                                        "type": "integer"
+                                    },
+                                    "fecha_inicio": {
+                                        "description": "Fecha de la primera sesión (YYYY-MM-DD HH:mm:ss).",
+                                        "type": "string",
+                                        "format": "date-time"
+                                    },
+                                    "id_personal": {
+                                        "description": "ID opcional del profesional asignado desde el inicio.",
+                                        "type": "integer",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Agenda creada exitosamente"
+                    },
+                    "422": {
+                        "description": "Datos incompletos o errores de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v1/aseguradoras": {
             "get": {
                 "tags": [
@@ -1576,17 +1692,10 @@
                 "operationId": "911086ae2d61a60693919278b9f1ea1d",
                 "parameters": [
                     {
-                        "name": "id_zona",
-                        "in": "query",
-                        "description": "Filtrar por Zona",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
                         "name": "id_comuna",
                         "in": "query",
                         "description": "Filtrar por Comuna",
+                        "required": false,
                         "schema": {
                             "type": "integer"
                         }
@@ -1595,6 +1704,7 @@
                         "name": "id_aseguradora",
                         "in": "query",
                         "description": "Filtrar por EPS",
+                        "required": false,
                         "schema": {
                             "type": "integer"
                         }
@@ -1603,6 +1713,7 @@
                         "name": "estado",
                         "in": "query",
                         "description": "Filtrar por estado del paciente",
+                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -1643,14 +1754,6 @@
                         "schema": {
                             "type": "integer"
                         }
-                    },
-                    {
-                        "name": "id_personal",
-                        "in": "query",
-                        "description": "Filtrar por profesional",
-                        "schema": {
-                            "type": "integer"
-                        }
                     }
                 ],
                 "responses": {
@@ -1685,14 +1788,6 @@
                         "name": "anio",
                         "in": "query",
                         "description": "Año a proyectar",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "id_personal",
-                        "in": "query",
-                        "description": "Filtrar por profesional",
                         "schema": {
                             "type": "integer"
                         }
@@ -1784,6 +1879,100 @@
                                                     },
                                                     "orden_en_ruta": {
                                                         "description": "Posición secuencial dentro de esa ruta",
+                                                        "type": "integer"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/mapas/rutas-optimizadas-global": {
+            "get": {
+                "tags": [
+                    "Mapas"
+                ],
+                "summary": "Optimizar rutas globales por cercanía (Script Python)",
+                "operationId": "df47a347cddb95e70eb781a2321a0550",
+                "parameters": [
+                    {
+                        "name": "mes",
+                        "in": "query",
+                        "description": "Mes a proyectar (1-12)",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "anio",
+                        "in": "query",
+                        "description": "Año a proyectar",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Rutas proyectadas organizadas secuencialmente por cercanía global",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "example": 150
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id_paciente": {
+                                                        "type": "integer"
+                                                    },
+                                                    "nombre_paciente": {
+                                                        "type": "string"
+                                                    },
+                                                    "direccion": {
+                                                        "type": "string"
+                                                    },
+                                                    "telefono": {
+                                                        "type": "string"
+                                                    },
+                                                    "latitud": {
+                                                        "type": "number",
+                                                        "format": "float"
+                                                    },
+                                                    "longitud": {
+                                                        "type": "number",
+                                                        "format": "float"
+                                                    },
+                                                    "fecha_proyectada": {
+                                                        "type": "string",
+                                                        "format": "date"
+                                                    },
+                                                    "orden_global": {
+                                                        "description": "Secuencia lógica uno a uno",
+                                                        "type": "integer"
+                                                    },
+                                                    "bloque_ruta": {
+                                                        "description": "Grupo de 8 pacientes para planeación diaria",
                                                         "type": "integer"
                                                     }
                                                 },
@@ -3937,6 +4126,10 @@
         {
             "name": "Usuarios",
             "description": "Endpoints para la gestión, creación y actualización de usuarios"
+        },
+        {
+            "name": "Agenda",
+            "description": "Agenda"
         },
         {
             "name": "Aseguradoras",
