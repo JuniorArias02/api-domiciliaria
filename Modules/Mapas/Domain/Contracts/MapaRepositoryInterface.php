@@ -50,7 +50,7 @@ interface MapaRepositoryInterface
     public function optimizarRutasMesCercania(array $filtros);
 
     /**
-     * Optimiza rutas globales basadas en cercanía y frecuencia (Lógica Script Python).
+     * Obtiene los datos base para la optimización (Pacientes + Ordenes + Última Visita).
      */
-    public function optimizarRutasGlobales(array $filtros);
+    public function obtenerDatosBaseOptimizacion(array $filtros);
 }

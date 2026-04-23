@@ -17,4 +17,5 @@ Route::prefix('mapas')->middleware('auth:api')->group(function () {
     Route::get('/rutas-optimizadas-cercania', [MapaController::class, 'getRutasOptimizadasPorCercania']);
     Route::get('/comunas/{id}/pacientes', [MapaController::class, 'getPacientesPorComuna']);
     Route::get('/rutas-optimizadas-global', [MapaController::class, 'getRutasGlobales']);
+    Route::get('/optimizar', [MapaController::class, 'optimizar']);
 });

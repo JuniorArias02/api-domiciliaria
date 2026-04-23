@@ -1736,160 +1736,11 @@
                 "tags": [
                     "Mapas"
                 ],
-                "summary": "Obtener predicción de rutas optimizadas por mes basadas en frecuencia y cercanía",
+                "summary": "Obtener mega listado de todos los pacientes, optimizado por cercanía en bloques de 8 (Sin parámetros)",
                 "operationId": "bce4e57294c1bb55070e945ae8aa5d95",
-                "parameters": [
-                    {
-                        "name": "mes",
-                        "in": "query",
-                        "description": "Mes a proyectar (1-12)",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "anio",
-                        "in": "query",
-                        "description": "Año a proyectar",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
                 "responses": {
                     "200": {
-                        "description": "Rutas proyectadas optimizadas"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/v1/mapas/rutas-optimizadas-orden": {
-            "get": {
-                "tags": [
-                    "Mapas"
-                ],
-                "summary": "Optimizar rutas mensuales basándose en el campo orden_mapa de los pacientes",
-                "operationId": "c031fecc0c2c943a2cbdb3cb4b99c20b",
-                "parameters": [
-                    {
-                        "name": "mes",
-                        "in": "query",
-                        "description": "Mes a proyectar (1-12)",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "anio",
-                        "in": "query",
-                        "description": "Año a proyectar",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Rutas proyectadas ordenadas por orden_mapa"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/v1/mapas/rutas-optimizadas-cercania": {
-            "get": {
-                "tags": [
-                    "Mapas"
-                ],
-                "summary": "Optimizar rutas mensuales basándose en cercanía geográfica (Mínimo 8 pacientes)",
-                "operationId": "ae44b31732f45fae58dbbfd201b7b624",
-                "parameters": [
-                    {
-                        "name": "mes",
-                        "in": "query",
-                        "description": "Mes a proyectar (1-12)",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "anio",
-                        "in": "query",
-                        "description": "Año a proyectar",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "id_personal",
-                        "in": "query",
-                        "description": "ID del profesional médico (Requerido)",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Mega listado de rutas organizadas por cercanía",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "total": {
-                                            "type": "integer",
-                                            "example": 24
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "properties": {
-                                                    "id_paciente": {
-                                                        "type": "integer"
-                                                    },
-                                                    "nombre_paciente": {
-                                                        "type": "string"
-                                                    },
-                                                    "direccion": {
-                                                        "type": "string"
-                                                    },
-                                                    "latitud": {
-                                                        "type": "string"
-                                                    },
-                                                    "longitud": {
-                                                        "type": "string"
-                                                    },
-                                                    "numero_ruta": {
-                                                        "description": "Identificador del bloque/día de ruta",
-                                                        "type": "integer"
-                                                    },
-                                                    "orden_en_ruta": {
-                                                        "description": "Posición secuencial dentro de esa ruta",
-                                                        "type": "integer"
-                                                    }
-                                                },
-                                                "type": "object"
-                                            }
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "description": "Mega listado de todos los pacientes iterados por cercanía de principio a fin"
                     }
                 },
                 "security": [
@@ -1974,6 +1825,106 @@
                                                     "bloque_ruta": {
                                                         "description": "Grupo de 8 pacientes para planeación diaria",
                                                         "type": "integer"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/mapas/optimizar": {
+            "get": {
+                "tags": [
+                    "Mapas"
+                ],
+                "summary": "Optimizar rutas basadas en frecuencia de visita y cercanía geográfica",
+                "operationId": "8d53eddd9b76b00565c25a4e776758b2",
+                "parameters": [
+                    {
+                        "name": "mes",
+                        "in": "query",
+                        "description": "Mes a proyectar (1-12) - Obligatorio",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 4
+                        }
+                    },
+                    {
+                        "name": "tipo_filtro",
+                        "in": "query",
+                        "description": "Tipo de optimización: \"profesional\" o \"pacientes\"",
+                        "schema": {
+                            "type": "string",
+                            "default": "pacientes",
+                            "enum": [
+                                "profesional",
+                                "pacientes"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "anio",
+                        "in": "query",
+                        "description": "Año a proyectar (por defecto actual)",
+                        "schema": {
+                            "type": "integer",
+                            "example": 2026
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Rutas optimizadas agrupadas en bloques de 8 pacientes",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "example": 120
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id_paciente": {
+                                                        "type": "integer"
+                                                    },
+                                                    "paciente": {
+                                                        "type": "string"
+                                                    },
+                                                    "latitud": {
+                                                        "type": "number"
+                                                    },
+                                                    "longitud": {
+                                                        "type": "number"
+                                                    },
+                                                    "bloque_ruta": {
+                                                        "type": "integer"
+                                                    },
+                                                    "orden_en_ruta": {
+                                                        "type": "integer"
+                                                    },
+                                                    "id_profesional": {
+                                                        "type": "integer",
+                                                        "nullable": true
                                                     }
                                                 },
                                                 "type": "object"

@@ -19,8 +19,8 @@ class ObtenerDatosDashboard
             'kpis_operativos' => $this->repo->obtenerKpisOperativos(),
             'gestion_visitas' => $this->repo->obtenerGestionVisitas(),
             'demografia' => $this->repo->obtenerDemografia(),
-            'gestion_recursos' => $this->repo->obtenerGestionRecursos(),
-            'control_calidad' => $this->repo->obtenerControlCalidad(),
+            // 'gestion_recursos' => $this->repo->obtenerGestionRecursos(),
+            // 'control_calidad' => $this->repo->obtenerControlCalidad(),
         ];
     }
 }
