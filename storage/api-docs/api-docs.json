@@ -1877,6 +1877,83 @@
                 ]
             }
         },
+        "/api/v1/ordenes-servicio": {
+            "get": {
+                "tags": [
+                    "OrdenesServicio"
+                ],
+                "summary": "Listar todas las órdenes de servicio",
+                "operationId": "4124fa665b8e3723149df8c74a35c905",
+                "responses": {
+                    "200": {
+                        "description": "Lista de órdenes de servicio obtenida correctamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "OrdenesServicio"
+                ],
+                "summary": "Registrar una nueva orden de servicio",
+                "operationId": "a2f0eb9cedba22bbada1d4068e15c312",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id_orden",
+                                    "id_servicio",
+                                    "numero_sesiones"
+                                ],
+                                "properties": {
+                                    "id_orden": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "id_servicio": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "id_profesional_asignado": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "numero_sesiones": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "frecuencia_dias": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "estado": {
+                                        "type": "string",
+                                        "example": "PROGRAMADA"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Orden de servicio registrada correctamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v1/paciente-diagnosticos": {
             "get": {
                 "tags": [
@@ -3750,6 +3827,10 @@
         {
             "name": "Ingresos",
             "description": "Endpoints para la gestión de ingresos de pacientes"
+        },
+        {
+            "name": "OrdenesServicio",
+            "description": "Endpoints para la gestión de órdenes de servicios"
         },
         {
             "name": "Usuarios",

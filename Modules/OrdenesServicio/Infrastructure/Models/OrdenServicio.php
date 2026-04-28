@@ -1,0 +1,28 @@
+<?php
+
+namespace Modules\OrdenesServicio\Infrastructure\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class OrdenServicio extends Model
+{
+    protected $table = 'ordenes_servicios';
+    protected $primaryKey = 'id_orden_servicio';
+
+    protected $fillable = [
+        'id_orden',
+        'id_servicio',
+        'id_profesional_asignado',
+        'numero_sesiones',
+        'frecuencia_dias',
+        'estado'
+    ];
+
+    protected $casts = [
+        'id_orden' => 'integer',
+        'id_servicio' => 'integer',
+        'id_profesional_asignado' => 'integer',
+        'numero_sesiones' => 'integer',
+        'frecuencia_dias' => 'integer'
+    ];
+}

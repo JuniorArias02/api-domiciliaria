@@ -28,4 +28,5 @@ return [
     Modules\Dashboard\Providers\DashboardServiceProvider::class,
     Modules\Agenda\Providers\AgendaServiceProvider::class,
     Modules\Ingresos\Providers\IngresoServiceProvider::class,
+    Modules\OrdenesServicio\Providers\OrdenServicioServiceProvider::class,
 ];
