@@ -22,8 +22,8 @@ class Paciente extends Model
         'id_madrina',
         'fecha_ingreso',
         'direccion',
-        'id_barrio',
-        'id_comuna',
+        'id_departamento',
+        'id_municipio',
         'orden_mapa',
         'latitud',
         'longitud',
@@ -41,13 +41,4 @@ class Paciente extends Model
         return $this->belongsTo(\Modules\Usuarios\Infrastructure\Models\Usuario::class, 'id_madrina', 'id_usuario');
     }
 
-    public function barrio()
-    {
-        return $this->belongsTo(\Modules\Barrios\Infrastructure\Models\Barrio::class, 'id_barrio', 'id_barrio');
-    }
-
-    public function comuna()
-    {
-        return $this->belongsTo(\Modules\Comunas\Infrastructure\Models\Comuna::class, 'id_comuna', 'id_comuna');
-    }
 }

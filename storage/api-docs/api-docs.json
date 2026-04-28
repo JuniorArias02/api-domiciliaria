@@ -335,147 +335,6 @@
                 ]
             }
         },
-        "/api/v1/barrios": {
-            "get": {
-                "tags": [
-                    "Barrios"
-                ],
-                "summary": "Listar todos los barrios",
-                "operationId": "f333581ccc76e2d5bed57fa7081de3e7",
-                "responses": {
-                    "200": {
-                        "description": "Listado de barrios"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "post": {
-                "tags": [
-                    "Barrios"
-                ],
-                "summary": "Crear nuevo barrio",
-                "operationId": "7e210c71f5a6b560cda1681e46d57c5c",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "nombre",
-                                    "id_comuna"
-                                ],
-                                "properties": {
-                                    "id_comuna": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "nombre": {
-                                        "type": "string",
-                                        "example": "Poblado"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Barrio creado exitosamente"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/v1/barrios/{id}": {
-            "put": {
-                "tags": [
-                    "Barrios"
-                ],
-                "summary": "Actualizar un barrio",
-                "operationId": "dad122f378b7a1572d7b460818dc141d",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID del barrio",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "nombre"
-                                ],
-                                "properties": {
-                                    "id_comuna": {
-                                        "type": "integer",
-                                        "example": 2
-                                    },
-                                    "nombre": {
-                                        "type": "string",
-                                        "example": "Laureles"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Barrio actualizado exitosamente"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "delete": {
-                "tags": [
-                    "Barrios"
-                ],
-                "summary": "Eliminar un barrio",
-                "operationId": "f8541975b39402b35757ddaa0a5e5fa1",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID del barrio",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Barrio eliminado exitosamente"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
         "/api/v1/cargos": {
             "get": {
                 "tags": [
@@ -599,177 +458,6 @@
                 "responses": {
                     "200": {
                         "description": "Cargo eliminado exitosamente"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/v1/comunas": {
-            "get": {
-                "tags": [
-                    "Comunas"
-                ],
-                "summary": "Listar todas las comunas",
-                "operationId": "819231fa3f553a10478dca469258bda7",
-                "responses": {
-                    "200": {
-                        "description": "Listado de comunas"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "post": {
-                "tags": [
-                    "Comunas"
-                ],
-                "summary": "Crear nueva comuna",
-                "operationId": "4ccc2de0915efc8b253cf883356ea750",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "nombre",
-                                    "id_zona"
-                                ],
-                                "properties": {
-                                    "id_zona": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "nombre": {
-                                        "type": "string",
-                                        "example": "Comuna 1"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Comuna creada exitosamente"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/v1/comunas/zona/{id_zona}": {
-            "get": {
-                "tags": [
-                    "Comunas"
-                ],
-                "summary": "Listar comunas por zona",
-                "operationId": "84058816cf9dec5af061ed2b515a56ec",
-                "parameters": [
-                    {
-                        "name": "id_zona",
-                        "in": "path",
-                        "description": "ID de la zona",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Listado de comunas filtradas por zona"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/v1/comunas/{id}": {
-            "put": {
-                "tags": [
-                    "Comunas"
-                ],
-                "summary": "Actualizar una comuna",
-                "operationId": "53f9d140a714ca231d36fe927265f53d",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID de la comuna",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "nombre"
-                                ],
-                                "properties": {
-                                    "id_zona": {
-                                        "type": "integer",
-                                        "example": 2
-                                    },
-                                    "nombre": {
-                                        "type": "string",
-                                        "example": "Comuna 2"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Comuna actualizada exitosamente"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "delete": {
-                "tags": [
-                    "Comunas"
-                ],
-                "summary": "Eliminar una comuna",
-                "operationId": "84fbde73a2ad4900728e0050a2b3809b",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID de la comuna",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Comuna eliminada exitosamente"
                     }
                 },
                 "security": [
@@ -1234,6 +922,75 @@
                 "responses": {
                     "200": {
                         "description": "Especialidad eliminada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/ingresos": {
+            "get": {
+                "tags": [
+                    "Ingresos"
+                ],
+                "summary": "Listar todos los ingresos",
+                "operationId": "c4eb052a6babaefdab958f4de08724ee",
+                "responses": {
+                    "200": {
+                        "description": "Lista de ingresos obtenida correctamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Ingresos"
+                ],
+                "summary": "Registrar un nuevo ingreso",
+                "operationId": "24d5b1100d776b7ac04fb2366f190487",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "ingreso",
+                                    "id_paciente",
+                                    "fecha_ingreso"
+                                ],
+                                "properties": {
+                                    "ingreso": {
+                                        "type": "integer",
+                                        "example": 12345
+                                    },
+                                    "id_paciente": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "fecha_ingreso": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2024-04-28 10:00:00"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Ingreso registrado correctamente"
+                    },
+                    "400": {
+                        "description": "Error en la solicitud"
                     }
                 },
                 "security": [
@@ -1882,6 +1639,14 @@
                         "schema": {
                             "type": "integer",
                             "example": 2026
+                        }
+                    },
+                    {
+                        "name": "id_profesional",
+                        "in": "query",
+                        "description": "Filtrar por un profesional específico",
+                        "schema": {
+                            "type": "integer"
                         }
                     }
                 ],
@@ -3967,138 +3732,6 @@
                     }
                 ]
             }
-        },
-        "/api/v1/zonas": {
-            "get": {
-                "tags": [
-                    "Zonas"
-                ],
-                "summary": "Listar todas las zonas",
-                "operationId": "5eebeaec85b3cb8748725bd48c2e5705",
-                "responses": {
-                    "200": {
-                        "description": "Listado de zonas"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "post": {
-                "tags": [
-                    "Zonas"
-                ],
-                "summary": "Crear nueva zona",
-                "operationId": "3149bedc3388d702a54f51e29284984c",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "nombre"
-                                ],
-                                "properties": {
-                                    "nombre": {
-                                        "type": "string",
-                                        "example": "Norte"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Zona creada exitosamente"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/v1/zonas/{id}": {
-            "put": {
-                "tags": [
-                    "Zonas"
-                ],
-                "summary": "Actualizar una zona",
-                "operationId": "d931af4f93324329649e6d81d6ebecd1",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID de la zona",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "nombre"
-                                ],
-                                "properties": {
-                                    "nombre": {
-                                        "type": "string",
-                                        "example": "Sur"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Zona actualizada exitosamente"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "delete": {
-                "tags": [
-                    "Zonas"
-                ],
-                "summary": "Eliminar una zona",
-                "operationId": "f5d3f13db318a116f3f778727c28581b",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID de la zona",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Zona eliminada exitosamente"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
         }
     },
     "components": {
@@ -4114,6 +3747,10 @@
         }
     },
     "tags": [
+        {
+            "name": "Ingresos",
+            "description": "Endpoints para la gestión de ingresos de pacientes"
+        },
         {
             "name": "Usuarios",
             "description": "Endpoints para la gestión, creación y actualización de usuarios"
@@ -4131,16 +3768,8 @@
             "description": "Autenticación"
         },
         {
-            "name": "Barrios",
-            "description": "Barrios"
-        },
-        {
             "name": "Cargos",
             "description": "Cargos"
-        },
-        {
-            "name": "Comunas",
-            "description": "Comunas"
         },
         {
             "name": "Cuidadores",
@@ -4201,10 +3830,6 @@
         {
             "name": "Visitas Domiciliarias",
             "description": "Visitas Domiciliarias"
-        },
-        {
-            "name": "Zonas",
-            "description": "Zonas"
         }
     ]
 }
