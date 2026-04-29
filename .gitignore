@@ -22,3 +22,7 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Laravel Docs
+/storage/api-docs/
+/swagger.json
