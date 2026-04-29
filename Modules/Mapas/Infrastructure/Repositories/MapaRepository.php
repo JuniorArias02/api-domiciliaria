@@ -58,7 +58,7 @@ class MapaRepository implements MapaRepositoryInterface
     {
         $paciente = DB::table('pacientes')
             ->leftJoin('aseguradoras', 'pacientes.id_aseguradora', '=', 'aseguradoras.id_aseguradora')
-            ->leftJoin('barrios', 'pacientes.id_barrio', '=', 'barrios.id_barrio')
+            ->leftJoin('barrios', 'pacientes.id_barrio', '=', 'barrios.id')
             ->select('pacientes.*', 'aseguradoras.nombre as nombre_aseguradora', 'barrios.nombre as nombre_barrio')
             ->where('id_paciente', $id_paciente)
             ->first();
@@ -68,7 +68,8 @@ class MapaRepository implements MapaRepositoryInterface
         }
 
         $ultimaVisita = DB::table('visitas_domiciliarias')
-            ->leftJoin('servicios', 'visitas_domiciliarias.id_servicio', '=', 'servicios.id_servicio')
+            ->leftJoin('ordenes_servicios', 'visitas_domiciliarias.id_orden_servicio', '=', 'ordenes_servicios.id_orden_servicio')
+            ->leftJoin('servicios', 'ordenes_servicios.id_servicio', '=', 'servicios.id_servicio')
             ->leftJoin('personal', 'visitas_domiciliarias.id_personal', '=', 'personal.id_personal')
             ->where('visitas_domiciliarias.id_paciente', $id_paciente)
             ->orderBy('fecha_realizada', 'DESC')
@@ -82,8 +83,15 @@ class MapaRepository implements MapaRepositoryInterface
 
         $diagnosticos = DB::table('paciente_diagnosticos')
             ->leftJoin('diagnosticos_cie10', 'paciente_diagnosticos.codigo_cie10', '=', 'diagnosticos_cie10.codigo')
-            ->where('id_paciente', $id_paciente)
-            ->select('diagnosticos_cie10.codigo', 'diagnosticos_cie10.descripcion', 'paciente_diagnosticos.es_principal')
+            ->where('paciente_diagnosticos.id_paciente', $id_paciente)
+            ->select(
+                'paciente_diagnosticos.codigo_cie10 as codigo',
+                'diagnosticos_cie10.descripcion',
+                'paciente_diagnosticos.es_principal',
+                'paciente_diagnosticos.tipo_diagnostico',
+                'paciente_diagnosticos.fecha_registro',
+                'paciente_diagnosticos.observacion'
+            )
             ->get();
 
         return [
