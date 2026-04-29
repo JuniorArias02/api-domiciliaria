@@ -18,13 +18,6 @@ class DashboardRepository implements DashboardRepositoryInterface
                 ->groupBy('estado')
                 ->get(),
             'ordenes_vigentes' => DB::table('ordenes_medicas')->where('estado', 'VIGENTE')->count(),
-            'equipos_en_uso' => DB::table('solicitudes_equipos')->where('estado', 'ENTREGADA')->count(),
-            'tutelas_activas' => DB::table('tutelas')
-                ->where('es_permanente', 1)
-                ->orWhere(function ($query) {
-                    $query->where('es_permanente', 0)
-                          ->whereRaw('DATE_ADD(fecha_tutela, INTERVAL duracion_dias DAY) >= ?', [Carbon::today()]);
-                })->count(),
         ];
     }
 
@@ -46,10 +39,11 @@ class DashboardRepository implements DashboardRepositoryInterface
                 ->orderByDesc('total_visitas_asignadas')
                 ->limit(10)
                 ->get(),
-            'visitas_especialidad' => DB::table('visitas_domiciliarias as v')
-                ->join('especialidades as e', 'v.id_especialidad', '=', 'e.id_especialidad')
-                ->select('e.nombre as especialidad', DB::raw('COUNT(v.id_visita) as total_visitas'))
-                ->groupBy('e.id_especialidad', 'e.nombre')
+            'visitas_servicio' => DB::table('visitas_domiciliarias as v')
+                ->join('ordenes_servicios as os', 'v.id_orden_servicio', '=', 'os.id_orden_servicio')
+                ->join('servicios as s', 'os.id_servicio', '=', 's.id_servicio')
+                ->select('s.nombre_servicio as servicio', DB::raw('COUNT(v.id_visita) as total_visitas'))
+                ->groupBy('s.id_servicio', 's.nombre_servicio')
                 ->orderByDesc('total_visitas')
                 ->get()
         ];
@@ -92,48 +86,11 @@ class DashboardRepository implements DashboardRepositoryInterface
 
     public function obtenerGestionRecursos(): array
     {
-        return [
-            'estado_solicitudes' => DB::table('solicitudes_equipos')
-                ->select('estado', DB::raw('COUNT(*) as cantidad_solicitudes'))
-                ->groupBy('estado')
-                ->get(),
-            'modalidad_equipos' => DB::table('solicitudes_equipos')
-                ->whereNotNull('modalidad')
-                ->select('modalidad', DB::raw('COUNT(*) as cantidad'))
-                ->groupBy('modalidad')
-                ->get(),
-            'laboratorios_pendientes' => DB::table('laboratorios as l')
-                ->join('pacientes as p', 'l.id_paciente', '=', 'p.id_paciente')
-                ->where('l.estado', 'PENDIENTE')
-                ->where('l.fecha_toma_programada', '<', Carbon::now())
-                ->select('l.id_laboratorio', 'p.nombre_completo as paciente', 'l.fecha_toma_programada')
-                ->orderBy('l.fecha_toma_programada', 'asc')
-                ->get()
-        ];
+        return []; // Tablas de equipos eliminadas
     }
 
     public function obtenerControlCalidad(): array
     {
-        return [
-            'promedio_dias_entrega' => DB::table('solicitudes_equipos')
-                ->where('estado', 'ENTREGADA')
-                ->whereNotNull('fecha_entrega')
-                ->avg(DB::raw('DATEDIFF(fecha_entrega, fecha_solicitud)')),
-            'efectividad_laboratorios' => DB::table('laboratorios')
-                ->whereIn('estado', ['REALIZADO', 'PROGRAMADO'])
-                ->select(
-                    DB::raw('COUNT(CASE WHEN confirmacion_toma = 1 THEN 1 END) as laboratorios_confirmados'),
-                    DB::raw('COUNT(*) as total_laboratorios'),
-                    DB::raw('(COUNT(CASE WHEN confirmacion_toma = 1 THEN 1 END) / COUNT(*)) * 100 as porcentaje_efectividad')
-                )->first(),
-            'demanda_telexperticia' => DB::table('telexperticias as t')
-                ->join('especialidades as e', 't.id_especialidad', '=', 'e.id_especialidad')
-                ->where('t.fecha_solicitud', '>=', Carbon::now()->subMonths(6))
-                ->select(DB::raw("DATE_FORMAT(t.fecha_solicitud, '%Y-%m') as mes"), 'e.nombre as especialidad', DB::raw('COUNT(*) as total_solicitudes'))
-                ->groupBy('mes', 'e.nombre')
-                ->orderByDesc('mes')
-                ->orderByDesc('total_solicitudes')
-                ->get()
-        ];
+        return []; // Tablas de laboratorios y telexperticias eliminadas
     }
 }

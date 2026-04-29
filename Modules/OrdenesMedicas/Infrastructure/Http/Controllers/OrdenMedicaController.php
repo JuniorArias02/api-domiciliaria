@@ -7,6 +7,7 @@ use Modules\OrdenesMedicas\Application\UseCases\CrearOrdenMedica;
 use Modules\OrdenesMedicas\Application\UseCases\ActualizarOrdenMedica;
 use Modules\OrdenesMedicas\Application\UseCases\EliminarOrdenMedica;
 use Modules\OrdenesMedicas\Application\UseCases\ListarOrdenesMedicas;
+use Modules\OrdenesMedicas\Application\UseCases\ObtenerOrdenesPorIngreso;
 use OpenApi\Attributes as OA;
 
 class OrdenMedicaController
@@ -27,6 +28,32 @@ class OrdenMedicaController
             $status = $e->getCode() ?: 400;
             $status = $status >= 400 && $status < 600 ? $status : 400;
             return response()->json(['error' => $e->getMessage()], $status);
+        }
+    }
+
+    #[OA\Get(
+        path: '/api/v1/ordenes-medicas/ingreso/{ingreso}',
+        summary: 'Obtener órdenes médicas por número de ingreso',
+        security: [['bearerAuth' => []]],
+        tags: ['Ordenes Médicas'],
+        parameters: [
+            new OA\Parameter(
+                name: 'ingreso',
+                in: 'path',
+                required: true,
+                description: 'Número del ingreso (campo ingreso)',
+                schema: new OA\Schema(type: 'integer')
+            )
+        ]
+    )]
+    #[OA\Response(response: 200, description: 'Órdenes obtenidas correctamente')]
+    public function porIngreso($ingreso, ObtenerOrdenesPorIngreso $useCase)
+    {
+        try {
+            $ordenes = $useCase->execute((int)$ingreso);
+            return response()->json(['data' => $ordenes], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
         }
     }
 

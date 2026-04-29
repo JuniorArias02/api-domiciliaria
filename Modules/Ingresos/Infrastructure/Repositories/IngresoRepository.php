@@ -16,4 +16,13 @@ class IngresoRepository implements IngresoRepositoryInterface
     {
         return Ingreso::create($data);
     }
+
+    public function obtenerAutorizacionesPorPaciente($idPaciente)
+    {
+        return Ingreso::where('id_paciente', $idPaciente)
+            ->whereNotNull('autorizacion')
+            ->select('autorizacion', 'fecha_ingreso', 'ingreso')
+            ->orderBy('fecha_ingreso', 'desc')
+            ->get();
+    }
 }

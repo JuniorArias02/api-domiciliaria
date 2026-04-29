@@ -35,7 +35,16 @@ class OrdenMedicaRepository implements OrdenMedicaRepositoryInterface
 
     public function obtenerPorId(int $id)
     {
-        return OrdenMedica::find($id);
+        return OrdenMedica::with(['servicios.servicio'])->find($id);
+    }
+
+    public function obtenerPorNumeroIngreso(int $numeroIngreso)
+    {
+        return OrdenMedica::with(['servicios.servicio'])
+            ->whereHas('ingreso', function ($query) use ($numeroIngreso) {
+                $query->where('ingreso', $numeroIngreso);
+            })
+            ->get();
     }
 
     public function listar()

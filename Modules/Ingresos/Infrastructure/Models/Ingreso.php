@@ -14,6 +14,7 @@ class Ingreso extends Model
     protected $fillable = [
         'ingreso',
         'id_paciente',
+        'autorizacion',
         'fecha_ingreso'
     ];
 

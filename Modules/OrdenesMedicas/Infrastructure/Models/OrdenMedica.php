@@ -10,14 +10,20 @@ class OrdenMedica extends Model
     protected $primaryKey = 'id_orden';
 
     protected $fillable = [
-        'id_paciente',
-        'id_especialidad',
-        'id_personal_ordena',
+        'id_ingreso',
+        'creado_por',
         'fecha_orden',
-        'numero_sesiones',
-        'frecuencia_dias',
-        'numero_mipres',
         'observacion',
         'estado'
     ];
+
+    public function ingreso()
+    {
+        return $this->belongsTo(\Modules\Ingresos\Infrastructure\Models\Ingreso::class, 'id_ingreso', 'id_ingreso');
+    }
+
+    public function servicios()
+    {
+        return $this->hasMany(\Modules\OrdenesServicio\Infrastructure\Models\OrdenServicio::class, 'id_orden', 'id_orden');
+    }
 }

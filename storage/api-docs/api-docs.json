@@ -335,6 +335,25 @@
                 ]
             }
         },
+        "/api/v1/barrios": {
+            "get": {
+                "tags": [
+                    "Barrios"
+                ],
+                "summary": "Listar todos los barrios",
+                "operationId": "f333581ccc76e2d5bed57fa7081de3e7",
+                "responses": {
+                    "200": {
+                        "description": "Lista de barrios obtenida correctamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v1/cargos": {
             "get": {
                 "tags": [
@@ -458,6 +477,25 @@
                 "responses": {
                     "200": {
                         "description": "Cargo eliminado exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/comunas": {
+            "get": {
+                "tags": [
+                    "Comunas"
+                ],
+                "summary": "Listar todas las comunas",
+                "operationId": "819231fa3f553a10478dca469258bda7",
+                "responses": {
+                    "200": {
+                        "description": "Lista de comunas obtenida correctamente"
                     }
                 },
                 "security": [
@@ -648,280 +686,16 @@
                 ]
             }
         },
-        "/api/v1/detalle-solicitudes-equipos": {
+        "/api/v1/departamentos": {
             "get": {
                 "tags": [
-                    "Detalle Solicitudes Equipos"
+                    "Departamentos"
                 ],
-                "summary": "Listar todos los detalles de solicitudes de equipos",
-                "operationId": "2e82faf82fadded644c725c9235e0a8f",
+                "summary": "Listar todos los departamentos",
+                "operationId": "16b8f0e6d5b930c1b53983b457e27300",
                 "responses": {
                     "200": {
-                        "description": "Listado de detalles"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "post": {
-                "tags": [
-                    "Detalle Solicitudes Equipos"
-                ],
-                "summary": "Crear nuevo detalle para solicitud",
-                "operationId": "3f8448ad6de9667d69c296be4ed86401",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "id_solicitud",
-                                    "id_equipo"
-                                ],
-                                "properties": {
-                                    "id_solicitud": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "id_equipo": {
-                                        "type": "integer",
-                                        "example": 5
-                                    },
-                                    "cantidad": {
-                                        "type": "integer",
-                                        "example": 2
-                                    },
-                                    "observacion": {
-                                        "type": "string",
-                                        "example": "Cama hospitalaria bimanual"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Detalle creado exitosamente"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/v1/detalle-solicitudes-equipos/{id}": {
-            "put": {
-                "tags": [
-                    "Detalle Solicitudes Equipos"
-                ],
-                "summary": "Actualizar un detalle",
-                "operationId": "a5c5d817aa8ef20b31cd7a7abc2910ae",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID del detalle",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "cantidad": {
-                                        "type": "integer",
-                                        "example": 3
-                                    },
-                                    "observacion": {
-                                        "type": "string",
-                                        "example": "Se incrementa la cantidad requerida"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Detalle actualizado exitosamente"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "delete": {
-                "tags": [
-                    "Detalle Solicitudes Equipos"
-                ],
-                "summary": "Eliminar un detalle",
-                "operationId": "a1be9d708705a519a27cc2273c0b91e9",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID del detalle",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Detalle eliminado exitosamente"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/v1/especialidades": {
-            "get": {
-                "tags": [
-                    "Especialidades"
-                ],
-                "summary": "Listar todas las especialidades médicas",
-                "operationId": "442bbbefd14888806f1707baf3db3b5c",
-                "responses": {
-                    "200": {
-                        "description": "Listado de especialidades"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "post": {
-                "tags": [
-                    "Especialidades"
-                ],
-                "summary": "Crear nueva especialidad médica",
-                "operationId": "8d4d43d7b30a471d8b2268583f5dacf5",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "nombre"
-                                ],
-                                "properties": {
-                                    "nombre": {
-                                        "type": "string",
-                                        "example": "Fisioterapia"
-                                    },
-                                    "abreviatura": {
-                                        "type": "string",
-                                        "example": "FISIO"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Especialidad creada exitosamente"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/v1/especialidades/{id}": {
-            "put": {
-                "tags": [
-                    "Especialidades"
-                ],
-                "summary": "Actualizar una especialidad",
-                "operationId": "24d7e1bff646e80cdbcc03a3ddd2fca3",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID de la especialidad",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "nombre": {
-                                        "type": "string",
-                                        "example": "Fisioterapia Domiciliaria"
-                                    },
-                                    "abreviatura": {
-                                        "type": "string",
-                                        "example": "FISIO-D"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Especialidad actualizada exitosamente"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "delete": {
-                "tags": [
-                    "Especialidades"
-                ],
-                "summary": "Eliminar una especialidad",
-                "operationId": "a1242ff05658ecc83a7b1a921202fd60",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID de la especialidad",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Especialidad eliminada exitosamente"
+                        "description": "Lista de departamentos obtenida correctamente"
                     }
                 },
                 "security": [
@@ -974,6 +748,10 @@
                                         "type": "integer",
                                         "example": 1
                                     },
+                                    "autorizacion": {
+                                        "type": "string",
+                                        "example": "AUT-001"
+                                    },
                                     "fecha_ingreso": {
                                         "type": "string",
                                         "format": "date-time",
@@ -1000,161 +778,18 @@
                 ]
             }
         },
-        "/api/v1/laboratorios": {
+        "/api/v1/ingresos/paciente/{idPaciente}/autorizaciones": {
             "get": {
                 "tags": [
-                    "Laboratorios"
+                    "Ingresos"
                 ],
-                "summary": "Listar todas las solicitudes de laboratorio",
-                "operationId": "6d3425269bc1fd8e09cd46eac69f9d6e",
-                "responses": {
-                    "200": {
-                        "description": "Listado de laboratorios"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "post": {
-                "tags": [
-                    "Laboratorios"
-                ],
-                "summary": "Crear nueva solicitud de laboratorio",
-                "operationId": "93d90eed36f21b9737f45295274872fe",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "id_paciente",
-                                    "fecha_solicitud"
-                                ],
-                                "properties": {
-                                    "id_paciente": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "id_orden_asociada": {
-                                        "type": "integer",
-                                        "example": 4
-                                    },
-                                    "id_personal_toma": {
-                                        "type": "integer",
-                                        "example": 3
-                                    },
-                                    "id_usuario_solicita": {
-                                        "type": "integer",
-                                        "example": 2
-                                    },
-                                    "fecha_solicitud": {
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "2026-10-20"
-                                    },
-                                    "fecha_toma_programada": {
-                                        "type": "string",
-                                        "format": "date-time",
-                                        "example": "2026-10-22 07:00:00"
-                                    },
-                                    "estado": {
-                                        "type": "string",
-                                        "example": "PENDIENTE"
-                                    },
-                                    "observaciones": {
-                                        "type": "string",
-                                        "example": "Toma en ayunas"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Laboratorio creado exitosamente"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/v1/laboratorios/{id}": {
-            "put": {
-                "tags": [
-                    "Laboratorios"
-                ],
-                "summary": "Actualizar una solicitud de laboratorio",
-                "operationId": "bb6ba12654269754939ddaea8f866406",
+                "summary": "Obtener todas las autorizaciones de un paciente",
+                "operationId": "e4259b20c52acec63e5db95940360065",
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "idPaciente",
                         "in": "path",
-                        "description": "ID del laboratorio",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "estado": {
-                                        "type": "string",
-                                        "example": "REALIZADO"
-                                    },
-                                    "fecha_toma_real": {
-                                        "type": "string",
-                                        "format": "date-time",
-                                        "example": "2026-10-22 08:15:00"
-                                    },
-                                    "confirmacion_toma": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "observaciones": {
-                                        "type": "string",
-                                        "example": "Toma realizada sin inconvenientes"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Laboratorio actualizado exitosamente"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "delete": {
-                "tags": [
-                    "Laboratorios"
-                ],
-                "summary": "Eliminar una solicitud de laboratorio",
-                "operationId": "bccde256417ddb3ad179e0c0c8ee8ad8",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID del laboratorio",
+                        "description": "ID del paciente",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -1163,7 +798,37 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Laboratorio eliminado exitosamente"
+                        "description": "Lista de autorizaciones obtenida correctamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "autorizacion": {
+                                                        "type": "string",
+                                                        "example": "AUT-2024-001"
+                                                    },
+                                                    "fecha_ingreso": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2024-04-28 10:00:00"
+                                                    },
+                                                    "ingreso": {
+                                                        "type": "integer",
+                                                        "example": 12345
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1709,6 +1374,25 @@
                 ]
             }
         },
+        "/api/v1/municipios": {
+            "get": {
+                "tags": [
+                    "Municipios"
+                ],
+                "summary": "Listar todos los municipios",
+                "operationId": "6bad5079589b36143e1722009e999dfe",
+                "responses": {
+                    "200": {
+                        "description": "Lista de municipios obtenida correctamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v1/ordenes-medicas": {
             "get": {
                 "tags": [
@@ -1790,6 +1474,36 @@
                 "responses": {
                     "201": {
                         "description": "Orden médica creada exitosamente"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/ordenes-medicas/ingreso/{ingreso}": {
+            "get": {
+                "tags": [
+                    "Ordenes Médicas"
+                ],
+                "summary": "Obtener órdenes médicas por número de ingreso",
+                "operationId": "f3905f6c0a452c40c8fc205d63ccb595",
+                "parameters": [
+                    {
+                        "name": "ingreso",
+                        "in": "path",
+                        "description": "Número del ingreso (campo ingreso)",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Órdenes obtenidas correctamente"
                     }
                 },
                 "security": [
@@ -2879,488 +2593,6 @@
                 ]
             }
         },
-        "/api/v1/solicitudes-equipos": {
-            "get": {
-                "tags": [
-                    "Solicitudes Equipos"
-                ],
-                "summary": "Listar todas las solicitudes de equipos",
-                "operationId": "7c54724cff2f43a894a7f05d4db330f7",
-                "responses": {
-                    "200": {
-                        "description": "Listado de solicitudes"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "post": {
-                "tags": [
-                    "Solicitudes Equipos"
-                ],
-                "summary": "Crear nueva solicitud de equipo",
-                "operationId": "47aa0f59b6e5f1e1da557483caebd7ad",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "id_paciente"
-                                ],
-                                "properties": {
-                                    "id_paciente": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "modalidad": {
-                                        "type": "string",
-                                        "example": "ALQUILER"
-                                    },
-                                    "tiempo_requerido": {
-                                        "type": "string",
-                                        "example": "1 MES"
-                                    },
-                                    "estado": {
-                                        "type": "string",
-                                        "example": "PENDIENTE"
-                                    },
-                                    "fecha_solicitud": {
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "2026-06-01"
-                                    },
-                                    "observaciones": {
-                                        "type": "string",
-                                        "example": "Se necesita oxigeno urgente"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Solicitud creada exitosamente"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/v1/solicitudes-equipos/{id}": {
-            "put": {
-                "tags": [
-                    "Solicitudes Equipos"
-                ],
-                "summary": "Actualizar una solicitud de equipo",
-                "operationId": "f77ed1c71000cc0ca2cc08fbe4fc242d",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID de la solicitud",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "estado": {
-                                        "type": "string",
-                                        "example": "APROBADO"
-                                    },
-                                    "id_usuario_gestiona": {
-                                        "type": "integer",
-                                        "example": 2
-                                    },
-                                    "fecha_entrega": {
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "2026-06-05"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Solicitud actualizada exitosamente"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "delete": {
-                "tags": [
-                    "Solicitudes Equipos"
-                ],
-                "summary": "Eliminar una solicitud de equipo",
-                "operationId": "623de7833d7c91573e1fec32128d1343",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID de la solicitud",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Solicitud eliminada exitosamente"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/v1/telexperticias": {
-            "get": {
-                "tags": [
-                    "Telexperticias"
-                ],
-                "summary": "Listar todas las telexperticias",
-                "operationId": "a647dd70e6e42c77652193cd54ee18ef",
-                "responses": {
-                    "200": {
-                        "description": "Listado de telexperticias"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "post": {
-                "tags": [
-                    "Telexperticias"
-                ],
-                "summary": "Crear nueva telexperticia",
-                "operationId": "9c15688279ff6b457857e9aa8ba8f05b",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "id_paciente",
-                                    "id_especialidad",
-                                    "fecha_solicitud"
-                                ],
-                                "properties": {
-                                    "id_paciente": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "id_especialidad": {
-                                        "type": "integer",
-                                        "example": 3
-                                    },
-                                    "id_usuario_solicita": {
-                                        "type": "integer",
-                                        "example": 2
-                                    },
-                                    "fecha_solicitud": {
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "2026-11-05"
-                                    },
-                                    "frecuencia_dias": {
-                                        "type": "integer",
-                                        "example": 15
-                                    },
-                                    "estado": {
-                                        "type": "string",
-                                        "example": "SOLICITADA"
-                                    },
-                                    "observaciones": {
-                                        "type": "string",
-                                        "example": "Consulta de seguimiento por especialista en neurología"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Telexperticia creada exitosamente"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/v1/telexperticias/{id}": {
-            "put": {
-                "tags": [
-                    "Telexperticias"
-                ],
-                "summary": "Actualizar una telexperticia",
-                "operationId": "a0ab9f3089a90d487a722ee1eaf55454",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID de la telexperticia",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "estado": {
-                                        "type": "string",
-                                        "example": "REALIZADA"
-                                    },
-                                    "frecuencia_dias": {
-                                        "type": "integer",
-                                        "example": 30
-                                    },
-                                    "observaciones": {
-                                        "type": "string",
-                                        "example": "Especialista recomienda continuar tratamiento"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Telexperticia actualizada exitosamente"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "delete": {
-                "tags": [
-                    "Telexperticias"
-                ],
-                "summary": "Eliminar una telexperticia",
-                "operationId": "b547a2243ee51233ce70ad452ad83800",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID de la telexperticia",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Telexperticia eliminada exitosamente"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/v1/tutelas": {
-            "get": {
-                "tags": [
-                    "Tutelas"
-                ],
-                "summary": "Listar todas las tutelas",
-                "operationId": "45a695fecb89fce907a78cd5f5ae2463",
-                "responses": {
-                    "200": {
-                        "description": "Listado de tutelas"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "post": {
-                "tags": [
-                    "Tutelas"
-                ],
-                "summary": "Crear nueva tutela",
-                "operationId": "fa6f75e44d7f209cb6763ab6dfc8a13b",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "id_paciente",
-                                    "numero_tutela"
-                                ],
-                                "properties": {
-                                    "id_paciente": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "numero_tutela": {
-                                        "type": "string",
-                                        "example": "T-1234567"
-                                    },
-                                    "fecha_tutela": {
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "2026-03-25"
-                                    },
-                                    "prestacion_autorizada": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "es_permanente": {
-                                        "type": "integer",
-                                        "example": 0
-                                    },
-                                    "duracion_dias": {
-                                        "type": "integer",
-                                        "example": 30
-                                    },
-                                    "observaciones": {
-                                        "type": "string",
-                                        "example": "Requiere atención especial"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Tutela creada exitosamente"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/v1/tutelas/{id}": {
-            "put": {
-                "tags": [
-                    "Tutelas"
-                ],
-                "summary": "Actualizar una tutela",
-                "operationId": "a59d28a0b670f983bb2dc1e36efc4ee1",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID de la tutela",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "prestacion_autorizada": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "duracion_dias": {
-                                        "type": "integer",
-                                        "example": 60
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Tutela actualizada exitosamente"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "delete": {
-                "tags": [
-                    "Tutelas"
-                ],
-                "summary": "Eliminar una tutela",
-                "operationId": "4db86b7f62df28cc73524d9a7e5e13e5",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID de la tutela",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Tutela eliminada exitosamente"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
         "/api/v1/usuarios": {
             "post": {
                 "tags": [
@@ -3825,8 +3057,24 @@
     },
     "tags": [
         {
+            "name": "Barrios",
+            "description": "Endpoints para la gestión de barrios"
+        },
+        {
+            "name": "Comunas",
+            "description": "Endpoints para la gestión de comunas"
+        },
+        {
+            "name": "Departamentos",
+            "description": "Endpoints para la gestión de departamentos"
+        },
+        {
             "name": "Ingresos",
             "description": "Endpoints para la gestión de ingresos de pacientes"
+        },
+        {
+            "name": "Municipios",
+            "description": "Endpoints para la gestión de municipios"
         },
         {
             "name": "OrdenesServicio",
@@ -3861,18 +3109,6 @@
             "description": "Dashboard"
         },
         {
-            "name": "Detalle Solicitudes Equipos",
-            "description": "Detalle Solicitudes Equipos"
-        },
-        {
-            "name": "Especialidades",
-            "description": "Especialidades"
-        },
-        {
-            "name": "Laboratorios",
-            "description": "Laboratorios"
-        },
-        {
             "name": "Mapas",
             "description": "Mapas"
         },
@@ -3895,18 +3131,6 @@
         {
             "name": "Servicios",
             "description": "Servicios"
-        },
-        {
-            "name": "Solicitudes Equipos",
-            "description": "Solicitudes Equipos"
-        },
-        {
-            "name": "Telexperticias",
-            "description": "Telexperticias"
-        },
-        {
-            "name": "Tutelas",
-            "description": "Tutelas"
         },
         {
             "name": "Visitas Domiciliarias",

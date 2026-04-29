@@ -8,8 +8,8 @@ use Modules\Mapas\Infrastructure\Services\RutaOptimizationService;
 
 /**
  * Arquitecto de Software: MapaRepository (Dominio Mapas)
- * 
- * Responsabilidad: Orquestar la recuperación de datos desde la BD y 
+ *
+ * Responsabilidad: Orquestar la recuperación de datos desde la BD y
  * delegar el procesamiento algorítmico al RutaOptimizationService.
  */
 class MapaRepository implements MapaRepositoryInterface
@@ -29,25 +29,26 @@ class MapaRepository implements MapaRepositoryInterface
         $query = DB::table('pacientes')
             ->select('id_paciente', 'latitud', 'longitud', 'nombre_completo', 'estado', 'id_comuna');
 
-        if (!empty($filtros['id_comuna'])) {
+        if (! empty($filtros['id_comuna'])) {
             $query->where('pacientes.id_comuna', $filtros['id_comuna']);
         }
 
-        if (!empty($filtros['id_zona'])) {
+        if (! empty($filtros['id_zona'])) {
             $query->join('comunas', 'pacientes.id_comuna', '=', 'comunas.id_comuna')
-                  ->where('comunas.id_zona', $filtros['id_zona']);
+                ->where('comunas.id_zona', $filtros['id_zona']);
         }
 
-        if (!empty($filtros['id_aseguradora'])) {
+        if (! empty($filtros['id_aseguradora'])) {
             $query->where('id_aseguradora', $filtros['id_aseguradora']);
         }
 
-        if (!empty($filtros['estado'])) {
+        if (! empty($filtros['estado'])) {
             $query->where('pacientes.estado', $filtros['estado']);
         }
 
         $perPage = $filtros['per_page'] ?? 500;
-        return $query->orderBy('pacientes.created_at', 'DESC')->paginate((int)$perPage);
+
+        return $query->orderBy('pacientes.created_at', 'DESC')->paginate((int) $perPage);
     }
 
     /**
@@ -62,7 +63,9 @@ class MapaRepository implements MapaRepositoryInterface
             ->where('id_paciente', $id_paciente)
             ->first();
 
-        if (!$paciente) return null;
+        if (! $paciente) {
+            return null;
+        }
 
         $ultimaVisita = DB::table('visitas_domiciliarias')
             ->leftJoin('servicios', 'visitas_domiciliarias.id_servicio', '=', 'servicios.id_servicio')
@@ -70,7 +73,7 @@ class MapaRepository implements MapaRepositoryInterface
             ->where('visitas_domiciliarias.id_paciente', $id_paciente)
             ->orderBy('fecha_realizada', 'DESC')
             ->select(
-                'visitas_domiciliarias.fecha_realizada', 
+                'visitas_domiciliarias.fecha_realizada',
                 'visitas_domiciliarias.estado as estado_visita',
                 'servicios.nombre_servicio',
                 'personal.nombre_completo as nombre_profesional'
@@ -84,9 +87,9 @@ class MapaRepository implements MapaRepositoryInterface
             ->get();
 
         return [
-            'paciente'      => $paciente,
+            'paciente' => $paciente,
             'ultima_visita' => $ultimaVisita,
-            'diagnosticos'  => $diagnosticos
+            'diagnosticos' => $diagnosticos,
         ];
     }
 
@@ -114,20 +117,20 @@ class MapaRepository implements MapaRepositoryInterface
             ->whereNotNull('pacientes.longitud')
             ->whereNotNull('visitas_domiciliarias.fecha_realizada');
 
-        if (!empty($filtros['id_profesional'])) {
+        if (! empty($filtros['id_profesional'])) {
             $query->where('visitas_domiciliarias.id_personal', $filtros['id_profesional']);
         }
 
-        if (!empty($filtros['fecha_inicio']) && !empty($filtros['fecha_fin'])) {
+        if (! empty($filtros['fecha_inicio']) && ! empty($filtros['fecha_fin'])) {
             $query->whereDate('visitas_domiciliarias.fecha_realizada', '>=', $filtros['fecha_inicio'])
-                  ->whereDate('visitas_domiciliarias.fecha_realizada', '<=', $filtros['fecha_fin']);
-        } elseif (!empty($filtros['fecha_inicio'])) {
+                ->whereDate('visitas_domiciliarias.fecha_realizada', '<=', $filtros['fecha_fin']);
+        } elseif (! empty($filtros['fecha_inicio'])) {
             $query->whereDate('visitas_domiciliarias.fecha_realizada', '=', $filtros['fecha_inicio']);
         }
 
         $query->orderBy(DB::raw('DATE(visitas_domiciliarias.fecha_realizada)'), 'ASC')
-              ->orderBy(DB::raw('TIME(visitas_domiciliarias.fecha_realizada) = "00:00:00"'), 'DESC')
-              ->orderBy(DB::raw('TIME(visitas_domiciliarias.fecha_realizada)'), 'DESC');
+            ->orderBy(DB::raw('TIME(visitas_domiciliarias.fecha_realizada) = "00:00:00"'), 'DESC')
+            ->orderBy(DB::raw('TIME(visitas_domiciliarias.fecha_realizada)'), 'DESC');
 
         // Obtenemos los datos planos
         $datos = $query->get()->toArray();
@@ -147,13 +150,15 @@ class MapaRepository implements MapaRepositoryInterface
             ->groupBy('id_paciente');
 
         $ultimaVisita = DB::table('visitas_domiciliarias as vd')
-            ->joinSub($ultimaVisitaId, 'uv_id', function($join) {
+            ->joinSub($ultimaVisitaId, 'uv_id', function ($join) {
                 $join->on('vd.id_visita', '=', 'uv_id.max_id');
             })
             ->select('vd.id_paciente', 'vd.fecha_realizada', 'vd.id_personal');
 
         $query = DB::table('pacientes as p')
-            ->join('ordenes_medicas as om', 'p.id_paciente', '=', 'om.id_paciente')
+            ->join('ingresos as i', 'p.id_paciente', '=', 'i.id_paciente')
+            ->join('ordenes_medicas as om', 'i.id_ingreso', '=', 'om.id_ingreso')
+            ->join('ordenes_servicios as os', 'om.id_orden', '=', 'os.id_orden')
             ->leftJoinSub($ultimaVisita, 'uv', function ($join) {
                 $join->on('p.id_paciente', '=', 'uv.id_paciente');
             })
@@ -170,24 +175,27 @@ class MapaRepository implements MapaRepositoryInterface
                 'per.id_personal',
                 'per.nombre_completo as nombre_profesional',
                 'om.id_orden',
-                'om.frecuencia_dias'
+                'om.fecha_orden',
+                'os.frecuencia_dias',
+                'uv.fecha_realizada as ultima_visita'
             )
             ->where('om.estado', 'VIGENTE')
             ->whereNotNull('p.latitud')
             ->whereNotNull('p.longitud');
 
-        if (!empty($filtros['id_personal'])) {
+        if (! empty($filtros['id_personal'])) {
             $query->where('per.id_personal', $filtros['id_personal']);
         }
 
         $pendientes = $query->groupBy(
-            'p.id_paciente', 'p.nombre_completo', 'p.latitud', 'p.longitud', 
-            'p.direccion', 'p.id_comuna', 'p.id_barrio', 'p.telefono', 
-            'per.id_personal', 'per.nombre_completo', 'om.id_orden', 'om.frecuencia_dias'
+            'p.id_paciente', 'p.nombre_completo', 'p.latitud', 'p.longitud',
+            'p.direccion', 'p.id_comuna', 'p.id_barrio', 'p.telefono',
+            'per.id_personal', 'per.nombre_completo', 'om.id_orden', 'os.frecuencia_dias'
         )->get()->toArray();
 
         // Delegamos algoritmo de vecino cercano y agrupamiento al Service
         $ordenados = $this->optimizationService->optimizarPorVecinoCercano($pendientes);
+
         return $this->optimizationService->agruparEnBloques($ordenados, 8);
     }
 
@@ -207,14 +215,16 @@ class MapaRepository implements MapaRepositoryInterface
 
         // 2. Traer los datos de esa última visita específica
         $ultimaVisita = DB::table('visitas_domiciliarias as vd')
-            ->joinSub($ultimaVisitaId, 'uv_id', function($join) {
+            ->joinSub($ultimaVisitaId, 'uv_id', function ($join) {
                 $join->on('vd.id_visita', '=', 'uv_id.max_id');
             })
             ->select('vd.id_paciente', 'vd.fecha_realizada', 'vd.id_personal');
 
         // 3. Query final uniendo con pacientes y sus órdenes vigentes
         $query = DB::table('pacientes as p')
-            ->join('ordenes_medicas as om', 'p.id_paciente', '=', 'om.id_paciente')
+            ->join('ingresos as i', 'p.id_paciente', '=', 'i.id_paciente')
+            ->join('ordenes_medicas as om', 'i.id_ingreso', '=', 'om.id_ingreso')
+            ->join('ordenes_servicios as os', 'om.id_orden', '=', 'os.id_orden')
             ->leftJoinSub($ultimaVisita, 'uv', function ($join) {
                 $join->on('p.id_paciente', '=', 'uv.id_paciente');
             })
@@ -225,7 +235,7 @@ class MapaRepository implements MapaRepositoryInterface
                 'p.longitud',
                 'p.direccion',
                 'p.telefono',
-                'om.frecuencia_dias',
+                'os.frecuencia_dias',
                 'om.fecha_orden',
                 'uv.id_personal',
                 'uv.fecha_realizada as ultima_visita'
@@ -234,7 +244,7 @@ class MapaRepository implements MapaRepositoryInterface
             ->whereNotNull('p.latitud')
             ->where('p.latitud', '!=', 0);
 
-        if (!empty($filtros['id_personal'])) {
+        if (! empty($filtros['id_personal'])) {
             $query->where('uv.id_personal', $filtros['id_personal']);
         }
 
@@ -251,23 +261,27 @@ class MapaRepository implements MapaRepositoryInterface
             ->where('id_paciente', $id_paciente)
             ->first();
 
-        if (!$paciente) return null;
+        if (! $paciente) {
+            return null;
+        }
 
-        $ordenes = DB::table('ordenes_medicas')
-            ->leftJoin('personal', 'ordenes_medicas.id_personal_ordena', '=', 'personal.id_personal')
-            ->leftJoin('especialidades', 'ordenes_medicas.id_especialidad', '=', 'especialidades.id_especialidad')
-            ->where('ordenes_medicas.id_paciente', $id_paciente)
+        $ordenes = DB::table('ordenes_medicas as om')
+            ->join('ingresos as i', 'om.id_ingreso', '=', 'i.id_ingreso')
+            ->join('ordenes_servicios as os', 'om.id_orden', '=', 'os.id_orden')
+            ->leftJoin('personal as per', 'os.id_profesional_asignado', '=', 'per.id_personal')
+            ->leftJoin('servicios as s', 'os.id_servicio', '=', 's.id_servicio')
+            ->where('i.id_paciente', $id_paciente)
             ->select(
-                'ordenes_medicas.id_orden',
-                'ordenes_medicas.fecha_orden',
-                'ordenes_medicas.numero_sesiones',
-                'ordenes_medicas.frecuencia_dias',
-                'ordenes_medicas.estado as estado_orden',
-                'personal.id_personal as id_profesional',
-                'personal.nombre_completo as nombre_profesional',
-                'especialidades.nombre as especialidad'
+                'om.id_orden',
+                'om.fecha_orden',
+                'os.numero_sesiones',
+                'os.frecuencia_dias',
+                'om.estado as estado_orden',
+                'per.id_personal as id_profesional',
+                'per.nombre_completo as nombre_profesional',
+                's.nombre_servicio as especialidad'
             )
-            ->orderBy('ordenes_medicas.fecha_orden', 'DESC')
+            ->orderBy('om.fecha_orden', 'DESC')
             ->get();
 
         return ['paciente' => $paciente, 'ordenes' => $ordenes];
@@ -286,17 +300,30 @@ class MapaRepository implements MapaRepositoryInterface
         $query = DB::table('pacientes')
             ->select('id_paciente', 'latitud', 'longitud', 'nombre_completo', 'estado', 'id_comuna');
 
-        if (!empty($filtros['id_comuna'])) $query->where('pacientes.id_comuna', $filtros['id_comuna']);
-        if (!empty($filtros['id_zona'])) {
-            $query->join('comunas', 'pacientes.id_comuna', '=', 'comunas.id_comuna')
-                  ->where('comunas.id_zona', $filtros['id_zona']);
+        if (! empty($filtros['id_comuna'])) {
+            $query->where('pacientes.id_comuna', $filtros['id_comuna']);
         }
-        if (!empty($filtros['id_aseguradora'])) $query->where('id_aseguradora', $filtros['id_aseguradora']);
-        if (!empty($filtros['estado'])) $query->where('pacientes.estado', $filtros['estado']);
+        if (! empty($filtros['id_zona'])) {
+            $query->join('comunas', 'pacientes.id_comuna', '=', 'comunas.id_comuna')
+                ->where('comunas.id_zona', $filtros['id_zona']);
+        }
+        if (! empty($filtros['id_aseguradora'])) {
+            $query->where('id_aseguradora', $filtros['id_aseguradora']);
+        }
+        if (! empty($filtros['estado'])) {
+            $query->where('pacientes.estado', $filtros['estado']);
+        }
 
         return $query->orderBy('pacientes.created_at', 'DESC')->get();
     }
 
-    public function optimizarRutasMesMetodoOrden(array $filtros) { return []; }
-    public function optimizarRutasMesCercania(array $filtros) { return []; }
+    public function optimizarRutasMesMetodoOrden(array $filtros)
+    {
+        return [];
+    }
+
+    public function optimizarRutasMesCercania(array $filtros)
+    {
+        return [];
+    }
 }

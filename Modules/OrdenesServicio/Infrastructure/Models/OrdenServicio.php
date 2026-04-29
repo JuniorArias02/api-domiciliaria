@@ -25,4 +25,9 @@ class OrdenServicio extends Model
         'numero_sesiones' => 'integer',
         'frecuencia_dias' => 'integer'
     ];
+
+    public function servicio()
+    {
+        return $this->belongsTo(\Modules\Servicios\Infrastructure\Models\Servicio::class, 'id_servicio', 'id_servicio');
+    }
 }

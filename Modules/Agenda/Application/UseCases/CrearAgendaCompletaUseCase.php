@@ -23,19 +23,39 @@ class CrearAgendaCompletaUseCase implements CrearAgendaCompletaUseCaseInterface
         DB::transaction(function () use ($input) {
             $timestamp = now()->toDateTimeString();
 
-            // 1. Crear Orden Médica (Ajustada a tu esquema ENUM y DATE)
+            // 1. Obtener el ingreso activo del paciente
+            $ingreso = DB::table('ingresos')
+                ->where('id_paciente', $input->id_paciente)
+                ->orderBy('fecha_ingreso', 'desc')
+                ->first();
+
+            if (!$ingreso) {
+                throw new \Exception("El paciente no tiene un ingreso registrado para crear una orden.");
+            }
+
+            // 2. Crear Orden Médica (Nueva estructura)
             $idOrden = $this->ordenRepository->crearOrden([
-                'id_paciente'        => $input->id_paciente,
-                'id_especialidad'    => $input->id_especialidad,
-                'fecha_orden'        => now()->toDateString(), // Campo obligatorio
-                'numero_sesiones'    => $input->numero_sesiones,
-                'frecuencia_dias'    => $input->frecuencia_dias,
-                'estado'             => 'VIGENTE', // Valor permitido en el ENUM
-                'created_at'         => $timestamp,
-                'updated_at'         => $timestamp,
+                'id_ingreso'   => $ingreso->id_ingreso,
+                'fecha_orden'  => now()->toDateString(),
+                'estado'       => 'VIGENTE',
+                'observacion'  => 'Generada automáticamente desde Agenda',
+                'created_at'   => $timestamp,
+                'updated_at'   => $timestamp,
             ]);
 
-            // 2. Preparar Visitas
+            // 3. Crear Orden de Servicio (Donde ahora reside la frecuencia y sesiones)
+            DB::table('ordenes_servicios')->insert([
+                'id_orden'                => $idOrden,
+                'id_servicio'             => $input->id_especialidad, // Mapeamos especialidad a servicio
+                'id_profesional_asignado' => $input->id_personal ?? 0,
+                'numero_sesiones'         => $input->numero_sesiones,
+                'frecuencia_dias'         => $input->frecuencia_dias,
+                'estado'                  => 'ACTIVO',
+                'created_at'              => $timestamp,
+                'updated_at'              => $timestamp,
+            ]);
+
+            // 4. Preparar Visitas
             $visitasAInsertar = [];
             
             for ($i = 0; $i < $input->numero_sesiones; $i++) {
