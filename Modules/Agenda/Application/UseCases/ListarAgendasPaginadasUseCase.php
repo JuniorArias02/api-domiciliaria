@@ -13,8 +13,7 @@ class ListarAgendasPaginadasUseCase implements ListarAgendasPaginadasUseCaseInte
 {
     public function __construct(
         private readonly OrdenRepositoryInterface $ordenRepository
-    ) {
-    }
+    ) {}
 
     public function execute(PaginacionAgendaInputDTO $input): LengthAwarePaginator
     {
