@@ -15,6 +15,7 @@ class OrdenServicio extends Model
         'id_profesional_asignado',
         'numero_sesiones',
         'frecuencia_dias',
+        'fecha_inicio',
         'estado'
     ];
 
@@ -23,11 +24,17 @@ class OrdenServicio extends Model
         'id_servicio' => 'integer',
         'id_profesional_asignado' => 'integer',
         'numero_sesiones' => 'integer',
-        'frecuencia_dias' => 'integer'
+        'frecuencia_dias' => 'integer',
+        'fecha_inicio' => 'datetime'
     ];
 
     public function servicio()
     {
         return $this->belongsTo(\Modules\Servicios\Infrastructure\Models\Servicio::class, 'id_servicio', 'id_servicio');
+    }
+
+    public function profesional()
+    {
+        return $this->belongsTo(\Modules\Personal\Infrastructure\Models\Personal::class, 'id_profesional_asignado', 'id_personal');
     }
 }

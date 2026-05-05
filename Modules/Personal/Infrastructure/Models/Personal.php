@@ -11,7 +11,6 @@ class Personal extends Model
 
     protected $fillable = [
         'id_cargo',
-        'id_especialidad',
         'nombre_completo',
         'numero_documento',
         'tipo_documento',

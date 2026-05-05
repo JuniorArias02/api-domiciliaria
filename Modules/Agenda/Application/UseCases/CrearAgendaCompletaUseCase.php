@@ -43,13 +43,13 @@ class CrearAgendaCompletaUseCase implements CrearAgendaCompletaUseCaseInterface
                 'updated_at'   => $timestamp,
             ]);
 
-            // 3. Crear Orden de Servicio (Donde ahora reside la frecuencia y sesiones)
-            DB::table('ordenes_servicios')->insert([
+            $idOrdenServicio = DB::table('ordenes_servicios')->insertGetId([
                 'id_orden'                => $idOrden,
-                'id_servicio'             => $input->id_especialidad, // Mapeamos especialidad a servicio
+                'id_servicio'             => $input->id_servicio,
                 'id_profesional_asignado' => $input->id_personal ?? 0,
                 'numero_sesiones'         => $input->numero_sesiones,
                 'frecuencia_dias'         => $input->frecuencia_dias,
+                'fecha_inicio'            => $input->fecha_inicio->toDateTimeString(),
                 'estado'                  => 'ACTIVO',
                 'created_at'              => $timestamp,
                 'updated_at'              => $timestamp,
@@ -62,10 +62,9 @@ class CrearAgendaCompletaUseCase implements CrearAgendaCompletaUseCaseInterface
                 $fechaProgramada = $input->fecha_inicio->copy()->addDays($i * $input->frecuencia_dias);
 
                 $visitasAInsertar[] = [
-                    'id_orden_asociada' => $idOrden,
+                    'id_orden_servicio' => $idOrdenServicio,
                     'id_paciente'       => $input->id_paciente,
                     'id_personal'       => $input->id_personal ?? 0,
-                    'id_especialidad'   => $input->id_especialidad,
                     'fecha_programada'  => $fechaProgramada->toDateTimeString(),
                     'estado'            => 'PROGRAMADA',
                     'created_at'        => $timestamp,

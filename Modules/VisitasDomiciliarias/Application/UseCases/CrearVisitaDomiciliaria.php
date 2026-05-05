@@ -22,8 +22,8 @@ class CrearVisitaDomiciliaria
         if (empty($data['id_personal'])) {
             throw new Exception("El campo id_personal es requerido por la base de datos", 400);
         }
-        if (empty($data['id_especialidad'])) {
-            throw new Exception("El campo id_especialidad es requerido por la base de datos", 400);
+        if (empty($data['id_orden_servicio'])) {
+            throw new Exception("El campo id_orden_servicio es requerido por la base de datos", 400);
         }
         if (empty($data['fecha_programada'])) {
             throw new Exception("El campo fecha_programada es requerido", 400);

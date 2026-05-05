@@ -41,12 +41,11 @@ class VisitaDomiciliariaController
         content: new OA\MediaType(
             mediaType: 'application/json',
             schema: new OA\Schema(
-                required: ['id_paciente', 'id_personal', 'id_especialidad', 'fecha_programada'],
+                required: ['id_paciente', 'id_personal', 'id_orden_servicio', 'fecha_programada'],
                 properties: [
-                    new OA\Property(property: 'id_orden_asociada', type: 'integer', example: 1),
+                    new OA\Property(property: 'id_orden_servicio', type: 'integer', example: 2),
                     new OA\Property(property: 'id_paciente', type: 'integer', example: 5),
                     new OA\Property(property: 'id_personal', type: 'integer', example: 3),
-                    new OA\Property(property: 'id_especialidad', type: 'integer', example: 2),
                     new OA\Property(property: 'id_usuario_programa', type: 'integer', example: 1),
                     new OA\Property(property: 'fecha_programada', type: 'string', format: 'date-time', example: '2026-10-15 08:30:00'),
                     new OA\Property(property: 'estado', type: 'string', example: 'PROGRAMADA'),

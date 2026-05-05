@@ -49,10 +49,10 @@ class CrearOrdenMedica
             ]);
 
             // 3. Si vienen datos de servicio, crear Orden de Servicio
-            if (!empty($data['id_especialidad']) || !empty($data['id_servicio'])) {
+            if (!empty($data['id_servicio'])) {
                 \Illuminate\Support\Facades\DB::table('ordenes_servicios')->insert([
                     'id_orden'                => $ordenMedica->id_orden,
-                    'id_servicio'             => $data['id_servicio'] ?? $data['id_especialidad'],
+                    'id_servicio'             => $data['id_servicio'],
                     'id_profesional_asignado' => $data['id_personal_ordena'] ?? 0,
                     'numero_sesiones'         => $data['numero_sesiones'] ?? 0,
                     'frecuencia_dias'         => $data['frecuencia_dias'] ?? 0,

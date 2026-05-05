@@ -45,7 +45,6 @@ class PersonalController
                 required: ['nombre_completo', 'numero_documento', 'tipo_documento', 'id_cargo'],
                 properties: [
                     new OA\Property(property: 'id_cargo', type: 'integer', example: 1),
-                    new OA\Property(property: 'id_especialidad', type: 'integer', example: 2),
                     new OA\Property(property: 'nombre_completo', type: 'string', example: 'Maria Rodriguez'),
                     new OA\Property(property: 'numero_documento', type: 'string', example: '1020304050'),
                     new OA\Property(property: 'tipo_documento', type: 'string', example: 'CC'),
@@ -124,13 +123,43 @@ class PersonalController
 
     #[OA\Get(
         path: '/api/v1/personal/buscar',
-        summary: 'Buscar personal por nombre o número de documento con límite',
+        summary: 'Buscar personal por nombre o número de documento',
         security: [['bearerAuth' => []]],
-        tags: ['Personal']
+        tags: ['Personal'],
+        parameters: [
+            new OA\Parameter(name: 'q', description: 'Cadena de búsqueda', in: 'query', required: true, schema: new OA\Schema(type: 'string')),
+            new OA\Parameter(name: 'limit', description: 'Número máximo de resultados (por defecto 5)', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 5))
+        ]
     )]
-    #[OA\Parameter(name: 'q', description: 'Cadena de búsqueda', in: 'query', required: true, schema: new OA\Schema(type: 'string'))]
-    #[OA\Parameter(name: 'limit', description: 'Número máximo de resultados (por defecto 5)', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 5))]
-    #[OA\Response(response: 200, description: 'Resultados de la búsqueda')]
+    #[OA\Response(
+        response: 200, 
+        description: 'Resultados de la búsqueda',
+        content: new OA\MediaType(
+            mediaType: 'application/json',
+            schema: new OA\Schema(
+                type: 'object',
+                properties: [
+                    new OA\Property(
+                        property: 'data',
+                        type: 'array',
+                        items: new OA\Items(
+                            properties: [
+                                new OA\Property(property: 'id_personal', type: 'integer', example: 1),
+                                new OA\Property(property: 'id_cargo', type: 'integer', example: 1),
+                                new OA\Property(property: 'nombre_completo', type: 'string', example: 'Maria Rodriguez'),
+                                new OA\Property(property: 'numero_documento', type: 'string', example: '1020304050'),
+                                new OA\Property(property: 'tipo_documento', type: 'string', example: 'CC'),
+                                new OA\Property(property: 'tarjeta_profesional', type: 'string', example: 'TP-98765'),
+                                new OA\Property(property: 'telefono', type: 'string', example: '3109876543'),
+                                new OA\Property(property: 'email', type: 'string', example: 'maria@ejemplo.com'),
+                                new OA\Property(property: 'estado', type: 'integer', example: 1)
+                            ]
+                        )
+                    )
+                ]
+            )
+        )
+    )]
     public function search(Request $request, BuscarPersonalUseCase $useCase)
     {
         try {

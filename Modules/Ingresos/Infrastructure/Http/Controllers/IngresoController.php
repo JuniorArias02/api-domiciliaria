@@ -118,4 +118,60 @@ class IngresoController extends Controller
             return response()->json(['error' => $e->getMessage()], 400);
         }
     }
+
+    #[OA\Get(
+        path: '/api/v1/ingresos/buscar',
+        summary: 'Buscar ingresos exclusivamente por número de ingreso',
+        security: [['bearerAuth' => []]],
+        tags: ['Ingresos'],
+        parameters: [
+            new OA\Parameter(
+                name: 'q', 
+                in: 'query', 
+                required: false, 
+                description: 'Término de búsqueda', 
+                schema: new OA\Schema(type: 'string')
+            )
+        ]
+    )]
+    #[OA\Response(
+        response: 200, 
+        description: 'Resultados de búsqueda',
+        content: new OA\MediaType(
+            mediaType: 'application/json',
+            schema: new OA\Schema(
+                type: 'object',
+                properties: [
+                    new OA\Property(
+                        property: 'data',
+                        type: 'array',
+                        items: new OA\Items(
+                            properties: [
+                                new OA\Property(property: 'id_ingreso', type: 'integer', example: 1),
+                                new OA\Property(property: 'ingreso', type: 'integer', example: 12345),
+                                new OA\Property(property: 'id_paciente', type: 'integer', example: 10),
+                                new OA\Property(property: 'autorizacion', type: 'string', example: 'AUT-001'),
+                                new OA\Property(property: 'fecha_ingreso', type: 'string', format: 'date-time', example: '2024-04-28 10:00:00'),
+                                new OA\Property(property: 'identificacion', type: 'string', example: '1090123456'),
+                                new OA\Property(property: 'nombre_completo', type: 'string', example: 'Juan Perez')
+                            ]
+                        )
+                    )
+                ]
+            )
+        )
+    )]
+    public function buscar(Request $request, \Modules\Ingresos\Application\UseCases\BuscarIngreso $useCase)
+    {
+        try {
+            $busqueda = $request->query('q', '');
+            if (empty(trim($busqueda))) {
+                return response()->json(['data' => []], 200);
+            }
+            $ingresos = $useCase->execute($busqueda);
+            return response()->json(['data' => $ingresos], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+    }
 }

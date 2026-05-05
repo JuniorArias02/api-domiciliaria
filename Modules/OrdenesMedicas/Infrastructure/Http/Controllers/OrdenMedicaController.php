@@ -68,10 +68,10 @@ class OrdenMedicaController
         content: new OA\MediaType(
             mediaType: 'application/json',
             schema: new OA\Schema(
-                required: ['id_paciente', 'id_especialidad', 'fecha_orden'],
+                required: ['id_paciente', 'id_servicio', 'fecha_orden'],
                 properties: [
                     new OA\Property(property: 'id_paciente', type: 'integer', example: 1),
-                    new OA\Property(property: 'id_especialidad', type: 'integer', example: 2),
+                    new OA\Property(property: 'id_servicio', type: 'integer', example: 2),
                     new OA\Property(property: 'id_personal_ordena', type: 'integer', example: 3),
                     new OA\Property(property: 'fecha_orden', type: 'string', format: 'date', example: '2026-06-01'),
                     new OA\Property(property: 'numero_sesiones', type: 'integer', example: 10),

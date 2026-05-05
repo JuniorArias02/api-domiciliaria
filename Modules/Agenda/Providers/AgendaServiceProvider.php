@@ -15,6 +15,9 @@ use Modules\Agenda\Infrastructure\Repositories\OrdenEloquentRepository;
 use Modules\Agenda\Domain\Contracts\VisitaRepositoryInterface;
 use Modules\Agenda\Infrastructure\Repositories\VisitaMasivaRepository;
 
+use Modules\Agenda\Application\Contracts\CrearAgendaMasivaUseCaseInterface;
+use Modules\Agenda\Application\UseCases\CrearAgendaMasivaUseCase;
+
 class AgendaServiceProvider extends ServiceProvider
 {
     /**
@@ -31,6 +34,7 @@ class AgendaServiceProvider extends ServiceProvider
         // 3. Vinculamos los Casos de Uso
         $this->app->bind(CrearAgendaCompletaUseCaseInterface::class, CrearAgendaCompletaUseCase::class);
         $this->app->bind(ListarAgendasPaginadasUseCaseInterface::class, ListarAgendasPaginadasUseCase::class);
+        $this->app->bind(CrearAgendaMasivaUseCaseInterface::class, CrearAgendaMasivaUseCase::class);
     }
 
     /**

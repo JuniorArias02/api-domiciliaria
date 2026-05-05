@@ -10,10 +10,9 @@ class VisitaDomiciliaria extends Model
     protected $primaryKey = 'id_visita';
 
     protected $fillable = [
-        'id_orden_asociada',
+        'id_orden_servicio',
         'id_paciente',
         'id_personal',
-        'id_especialidad',
         'id_usuario_programa',
         'fecha_programada',
         'fecha_realizada',
@@ -26,8 +25,25 @@ class VisitaDomiciliaria extends Model
         'observaciones',
         'codigo_ingreso',
         'tipo_atencion_ext',
-        'servicio_tipo',
-        'remitido_a',
-        'id_servicio'
+        'remitido_a'
     ];
+
+    public function ordenServicio()
+    {
+        return $this->belongsTo(\Modules\OrdenesServicio\Infrastructure\Models\OrdenServicio::class, 'id_orden_servicio', 'id_orden_servicio');
+    }
+
+    public function paciente(){
+        return $this->belongsTo(\Modules\Pacientes\Infrastructure\Models\Paciente::class, 'id_paciente', 'id_paciente');
+    }
+
+    public function personal()
+    {
+        return $this->belongsTo(\Modules\Personal\Infrastructure\Models\Personal::class, 'id_personal', 'id_personal');
+    }
+
+    public function usuarioPrograma()
+    {
+        return $this->belongsTo(\Modules\Auth\Infrastructure\Models\Usuario::class, 'id_usuario_programa', 'id_usuario');
+    }
 }

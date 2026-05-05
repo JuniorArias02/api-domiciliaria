@@ -122,4 +122,74 @@ class AgendaController
             ], 500); 
         }
     }
+
+    #[OA\Post(
+        path: '/api/v1/agenda/crear-masiva',
+        summary: 'Crear agendamiento masivo (Orden Médica + Múltiples Servicios + Visitas)',
+        security: [['bearerAuth' => []]],
+        tags: ['Agenda']
+    )]
+    #[OA\RequestBody(
+        required: true,
+        content: new OA\MediaType(
+            mediaType: 'application/json',
+            schema: new OA\Schema(
+                required: ['id_ingreso', 'servicios'],
+                properties: [
+                    new OA\Property(property: 'id_ingreso', type: 'integer', example: 1),
+                    new OA\Property(property: 'observaciones', type: 'string', example: 'El paciente requiere que se le llame antes de ir.'),
+                    new OA\Property(
+                        property: 'servicios',
+                        type: 'array',
+                        items: new OA\Items(
+                            required: ['id_servicio', 'fecha_inicio', 'sesiones'],
+                            properties: [
+                                new OA\Property(property: 'id_servicio', type: 'integer', example: 4),
+                                new OA\Property(property: 'id_personal', type: 'integer', example: 2),
+                                new OA\Property(property: 'fecha_inicio', type: 'string', format: 'date-time', example: '2026-05-04T08:30'),
+                                new OA\Property(property: 'sesiones', type: 'integer', example: 10)
+                            ]
+                        )
+                    )
+                ]
+            )
+        )
+    )]
+    #[OA\Response(response: 201, description: 'Agendamiento masivo creado exitosamente')]
+    #[OA\Response(response: 422, description: 'Datos incompletos o errores de validación')]
+    public function crearMasiva(Request $request, \Modules\Agenda\Application\Contracts\CrearAgendaMasivaUseCaseInterface $useCase): JsonResponse
+    {
+        try {
+            $data = $request->validate([
+                'id_ingreso' => 'required|integer',
+                'observaciones' => 'nullable|string',
+                'servicios' => 'required|array|min:1',
+                'servicios.*.id_servicio' => 'required|integer',
+                'servicios.*.id_personal' => 'nullable|integer',
+                'servicios.*.fecha_inicio' => 'required|date',
+                'servicios.*.sesiones' => 'required|integer|min:1',
+            ]);
+
+            $inputDto = \Modules\Agenda\Application\DTO\CrearAgendaMasivaInputDTO::fromRequest($data);
+            
+            $useCase->execute($inputDto);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Agendamiento masivo creado correctamente.'
+            ], 201);
+            
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'error'   => 'Errores de validación',
+                'details' => $e->errors()
+            ], 422);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error'   => 'Error interno al procesar el agendamiento masivo: ' . $e->getMessage()
+            ], 500); 
+        }
+    }
 }

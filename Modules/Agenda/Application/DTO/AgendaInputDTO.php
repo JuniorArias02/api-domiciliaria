@@ -12,10 +12,11 @@ class AgendaInputDTO
 {
     public function __construct(
         public readonly int $id_paciente,
-        public readonly int $id_especialidad,
+        public readonly int $id_servicio,
         public readonly int $numero_sesiones,
         public readonly int $frecuencia_dias,
         public readonly Carbon $fecha_inicio,
+        public readonly ?int $id_orden = null,
         public readonly ?int $id_personal = null
     ) {
         if ($this->numero_sesiones <= 0) {

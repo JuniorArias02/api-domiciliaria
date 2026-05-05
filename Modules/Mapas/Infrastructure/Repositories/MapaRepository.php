@@ -152,25 +152,14 @@ class MapaRepository implements MapaRepositoryInterface
      */
     public function optimizarRutasMes(array $filtros)
     {
-        $ultimaVisitaId = DB::table('visitas_domiciliarias')
-            ->select('id_paciente', DB::raw('MAX(id_visita) as max_id'))
-            ->where('estado', 'COMPLETADA')
-            ->groupBy('id_paciente');
+        $mes = $filtros['mes'] ?? date('m');
+        $anio = $filtros['anio'] ?? date('Y');
 
-        $ultimaVisita = DB::table('visitas_domiciliarias as vd')
-            ->joinSub($ultimaVisitaId, 'uv_id', function ($join) {
-                $join->on('vd.id_visita', '=', 'uv_id.max_id');
-            })
-            ->select('vd.id_paciente', 'vd.fecha_realizada', 'vd.id_personal');
-
-        $query = DB::table('pacientes as p')
-            ->join('ingresos as i', 'p.id_paciente', '=', 'i.id_paciente')
-            ->join('ordenes_medicas as om', 'i.id_ingreso', '=', 'om.id_ingreso')
-            ->join('ordenes_servicios as os', 'om.id_orden', '=', 'os.id_orden')
-            ->leftJoinSub($ultimaVisita, 'uv', function ($join) {
-                $join->on('p.id_paciente', '=', 'uv.id_paciente');
-            })
-            ->leftJoin('personal as per', 'uv.id_personal', '=', 'per.id_personal')
+        $query = DB::table('visitas_domiciliarias as v')
+            ->join('pacientes as p', 'v.id_paciente', '=', 'p.id_paciente')
+            ->join('ordenes_servicios as os', 'v.id_orden_servicio', '=', 'os.id_orden_servicio')
+            ->join('ordenes_medicas as om', 'os.id_orden', '=', 'om.id_orden')
+            ->leftJoin('personal as per', 'v.id_personal', '=', 'per.id_personal')
             ->select(
                 'p.id_paciente',
                 'p.nombre_completo as nombre_paciente',
@@ -183,16 +172,21 @@ class MapaRepository implements MapaRepositoryInterface
                 'per.id_personal',
                 'per.nombre_completo as nombre_profesional',
                 'om.id_orden',
-                'om.fecha_orden',
                 'os.frecuencia_dias',
-                'uv.fecha_realizada as ultima_visita'
+                DB::raw('MIN(v.fecha_programada) as fecha_programada')
             )
-            ->where('om.estado', 'VIGENTE')
+            ->where('v.estado', 'PROGRAMADA')
+            ->whereMonth('v.fecha_programada', $mes)
+            ->whereYear('v.fecha_programada', $anio)
             ->whereNotNull('p.latitud')
             ->whereNotNull('p.longitud');
 
         if (! empty($filtros['id_personal'])) {
-            $query->where('per.id_personal', $filtros['id_personal']);
+            $query->where('v.id_personal', $filtros['id_personal']);
+        }
+
+        if (! empty($filtros['id_servicio'])) {
+            $query->where('os.id_servicio', $filtros['id_servicio']);
         }
 
         $pendientes = $query->groupBy(
@@ -216,26 +210,11 @@ class MapaRepository implements MapaRepositoryInterface
         $mes = $filtros['mes'] ?? date('m');
         $anio = $filtros['anio'] ?? date('Y');
 
-        // 1. Obtener el ID de la última visita de cada paciente
-        $ultimaVisitaId = DB::table('visitas_domiciliarias')
-            ->select('id_paciente', DB::raw('MAX(id_visita) as max_id'))
-            ->groupBy('id_paciente');
-
-        // 2. Traer los datos de esa última visita específica
-        $ultimaVisita = DB::table('visitas_domiciliarias as vd')
-            ->joinSub($ultimaVisitaId, 'uv_id', function ($join) {
-                $join->on('vd.id_visita', '=', 'uv_id.max_id');
-            })
-            ->select('vd.id_paciente', 'vd.fecha_realizada', 'vd.id_personal');
-
-        // 3. Query final uniendo con pacientes y sus órdenes vigentes
-        $query = DB::table('pacientes as p')
-            ->join('ingresos as i', 'p.id_paciente', '=', 'i.id_paciente')
-            ->join('ordenes_medicas as om', 'i.id_ingreso', '=', 'om.id_ingreso')
-            ->join('ordenes_servicios as os', 'om.id_orden', '=', 'os.id_orden')
-            ->leftJoinSub($ultimaVisita, 'uv', function ($join) {
-                $join->on('p.id_paciente', '=', 'uv.id_paciente');
-            })
+        $query = DB::table('visitas_domiciliarias as v')
+            ->join('pacientes as p', 'v.id_paciente', '=', 'p.id_paciente')
+            ->join('ordenes_servicios as os', 'v.id_orden_servicio', '=', 'os.id_orden_servicio')
+            ->join('ordenes_medicas as om', 'os.id_orden', '=', 'om.id_orden')
+            ->leftJoin('personal as per', 'v.id_personal', '=', 'per.id_personal')
             ->select(
                 'p.id_paciente',
                 'p.nombre_completo as paciente',
@@ -245,18 +224,28 @@ class MapaRepository implements MapaRepositoryInterface
                 'p.telefono',
                 'os.frecuencia_dias',
                 'om.fecha_orden',
-                'uv.id_personal',
-                'uv.fecha_realizada as ultima_visita'
+                'per.id_personal',
+                'per.nombre_completo as nombre_profesional',
+                DB::raw('MIN(v.fecha_programada) as fecha_programada')
             )
-            ->where('om.estado', 'VIGENTE')
+            ->where('v.estado', 'PROGRAMADA')
+            ->whereMonth('v.fecha_programada', $mes)
+            ->whereYear('v.fecha_programada', $anio)
             ->whereNotNull('p.latitud')
             ->where('p.latitud', '!=', 0);
 
         if (! empty($filtros['id_personal'])) {
-            $query->where('uv.id_personal', $filtros['id_personal']);
+            $query->where('v.id_personal', $filtros['id_personal']);
         }
 
-        return $query->get()->toArray();
+        if (! empty($filtros['id_servicio'])) {
+            $query->where('os.id_servicio', $filtros['id_servicio']);
+        }
+
+        return $query->groupBy(
+            'p.id_paciente', 'p.nombre_completo', 'p.latitud', 'p.longitud',
+            'p.direccion', 'p.telefono', 'os.frecuencia_dias', 'om.fecha_orden', 'per.id_personal', 'per.nombre_completo'
+        )->get()->toArray();
     }
 
     /**
@@ -287,7 +276,7 @@ class MapaRepository implements MapaRepositoryInterface
                 'om.estado as estado_orden',
                 'per.id_personal as id_profesional',
                 'per.nombre_completo as nombre_profesional',
-                's.nombre_servicio as especialidad'
+                's.nombre_servicio as servicio'
             )
             ->orderBy('om.fecha_orden', 'DESC')
             ->get();

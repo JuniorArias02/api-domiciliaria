@@ -40,7 +40,7 @@ class OrdenMedicaRepository implements OrdenMedicaRepositoryInterface
 
     public function obtenerPorNumeroIngreso(int $numeroIngreso)
     {
-        return OrdenMedica::with(['servicios.servicio'])
+        return OrdenMedica::with(['servicios.servicio', 'servicios.profesional'])
             ->whereHas('ingreso', function ($query) use ($numeroIngreso) {
                 $query->where('ingreso', $numeroIngreso);
             })

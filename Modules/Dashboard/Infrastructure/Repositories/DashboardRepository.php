@@ -18,6 +18,13 @@ class DashboardRepository implements DashboardRepositoryInterface
                 ->groupBy('estado')
                 ->get(),
             'ordenes_vigentes' => DB::table('ordenes_medicas')->where('estado', 'VIGENTE')->count(),
+            'servicio_mas_solicitado' => DB::table('visitas_domiciliarias as v')
+                ->join('ordenes_servicios as os', 'v.id_orden_servicio', '=', 'os.id_orden_servicio')
+                ->join('servicios as s', 'os.id_servicio', '=', 's.id_servicio')
+                ->select('s.nombre_servicio as servicio', DB::raw('COUNT(v.id_visita) as total_visitas'))
+                ->groupBy('s.id_servicio', 's.nombre_servicio')
+                ->orderByDesc('total_visitas')
+                ->first(),
         ];
     }
 
@@ -43,6 +50,7 @@ class DashboardRepository implements DashboardRepositoryInterface
                 ->join('ordenes_servicios as os', 'v.id_orden_servicio', '=', 'os.id_orden_servicio')
                 ->join('servicios as s', 'os.id_servicio', '=', 's.id_servicio')
                 ->select('s.nombre_servicio as servicio', DB::raw('COUNT(v.id_visita) as total_visitas'))
+                ->where('v.estado', 'COMPLETADA')
                 ->groupBy('s.id_servicio', 's.nombre_servicio')
                 ->orderByDesc('total_visitas')
                 ->get()

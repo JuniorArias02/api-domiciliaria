@@ -125,4 +125,58 @@ class ServicioController
             return response()->json(['error' => $e->getMessage()], 400);
         }
     }
+
+    #[OA\Get(
+        path: '/api/v1/servicios/buscar',
+        summary: 'Buscar servicios por código o nombre',
+        security: [['bearerAuth' => []]],
+        tags: ['Servicios'],
+        parameters: [
+            new OA\Parameter(
+                name: 'q', 
+                in: 'query', 
+                required: false, 
+                description: 'Término de búsqueda', 
+                schema: new OA\Schema(type: 'string')
+            )
+        ]
+    )]
+    #[OA\Response(
+        response: 200, 
+        description: 'Resultados de búsqueda',
+        content: new OA\MediaType(
+            mediaType: 'application/json',
+            schema: new OA\Schema(
+                type: 'object',
+                properties: [
+                    new OA\Property(
+                        property: 'data',
+                        type: 'array',
+                        items: new OA\Items(
+                            properties: [
+                                new OA\Property(property: 'id_servicio', type: 'integer', example: 1),
+                                new OA\Property(property: 'codigo_servicio', type: 'string', example: 'S001'),
+                                new OA\Property(property: 'nombre_servicio', type: 'string', example: 'Consulta Médica General'),
+                                new OA\Property(property: 'descripcion', type: 'string', example: 'Atención primaria'),
+                                new OA\Property(property: 'estado', type: 'integer', example: 1)
+                            ]
+                        )
+                    )
+                ]
+            )
+        )
+    )]
+    public function buscar(Request $request, \Modules\Servicios\Application\UseCases\BuscarServicio $useCase)
+    {
+        try {
+            $busqueda = $request->query('q', '');
+            if (empty(trim($busqueda))) {
+                return response()->json(['data' => []], 200);
+            }
+            $servicios = $useCase->execute($busqueda);
+            return response()->json(['data' => $servicios], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+    }
 }
