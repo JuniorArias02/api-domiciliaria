@@ -17,4 +17,11 @@ interface OrdenRepositoryInterface
      * @return \Illuminate\Pagination\LengthAwarePaginator
      */
     public function listarPaginado(array $filtros, int $perPage): \Illuminate\Pagination\LengthAwarePaginator;
+
+    /**
+     * @param array $filtros
+     * @param int $perPage
+     * @return \Illuminate\Pagination\LengthAwarePaginator
+     */
+    public function listarAgendasDetalladas(array $filtros, int $perPage): \Illuminate\Pagination\LengthAwarePaginator;
 }

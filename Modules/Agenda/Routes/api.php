@@ -11,6 +11,8 @@ use Modules\Agenda\Infrastructure\Http\Controllers\AgendaController;
 
 Route::prefix('agenda')->middleware('auth:api')->group(function () {
     Route::get('/listado', [AgendaController::class, 'index']);
+    Route::get('/listado-detallado', [AgendaController::class, 'listadoDetallado']);
     Route::post('/crear', [AgendaController::class, 'crearAgendaCompleta']);
     Route::post('/crear-masiva', [AgendaController::class, 'crearMasiva']);
 });
+ 

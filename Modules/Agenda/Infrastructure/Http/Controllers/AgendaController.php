@@ -11,6 +11,7 @@ use Modules\Agenda\Application\Contracts\CrearAgendaCompletaUseCaseInterface;
 use Modules\Agenda\Application\Contracts\ListarAgendasPaginadasUseCaseInterface;
 use Modules\Agenda\Application\DTO\AgendaInputDTO;
 use Modules\Agenda\Application\DTO\PaginacionAgendaInputDTO;
+use Modules\Agenda\Application\Contracts\ListarAgendasDetalladasUseCaseInterface;
 use Modules\Agenda\Domain\Exceptions\FrecuenciaInvalidaException;
 use OpenApi\Attributes as OA;
 use Exception;
@@ -190,6 +191,74 @@ class AgendaController
                 'success' => false,
                 'error'   => 'Error interno al procesar el agendamiento masivo: ' . $e->getMessage()
             ], 500); 
+        }
+    }
+
+    #[OA\Get(
+        path: '/api/v1/agenda/listado-detallado',
+        summary: 'Obtener listado detallado (Órden -> Servicios -> Visitas)',
+        security: [['bearerAuth' => []]],
+        tags: ['Agenda']
+    )]
+    #[OA\Parameter(name: 'per_page', in: 'query', schema: new OA\Schema(type: 'integer', minimum: 10, maximum: 150, default: 15))]
+    #[OA\Parameter(name: 'page', in: 'query', schema: new OA\Schema(type: 'integer', default: 1))]
+    #[OA\Parameter(name: 'buscar', in: 'query', schema: new OA\Schema(type: 'string'))]
+    #[OA\Parameter(name: 'estado', in: 'query', schema: new OA\Schema(type: 'string', enum: ['VIGENTE', 'FINALIZADA', 'CANCELADA']))]
+    #[OA\Response(
+        response: 200, 
+        description: 'Listado detallado y anidado de agendas',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'success', type: 'boolean'),
+                new OA\Property(property: 'data', type: 'array', items: new OA\Items(
+                    properties: [
+                        new OA\Property(property: 'id_orden', type: 'integer'),
+                        new OA\Property(property: 'fecha_orden', type: 'string'),
+                        new OA\Property(property: 'autorizacion', type: 'string'),
+                        new OA\Property(property: 'nombre_paciente', type: 'string'),
+                        new OA\Property(property: 'ordenes_servicios', type: 'array', items: new OA\Items(
+                            properties: [
+                                new OA\Property(property: 'id_orden_servicio', type: 'integer'),
+                                new OA\Property(property: 'nombre_servicio', type: 'string'),
+                                new OA\Property(property: 'nombre_profesional', type: 'string'),
+                                new OA\Property(property: 'visitas_domiciliarias', type: 'array', items: new OA\Items(
+                                    properties: [
+                                        new OA\Property(property: 'id_visita', type: 'integer'),
+                                        new OA\Property(property: 'fecha_programada', type: 'string'),
+                                        new OA\Property(property: 'estado', type: 'string')
+                                    ]
+                                ))
+                            ]
+                        ))
+                    ]
+                )),
+                new OA\Property(property: 'meta', type: 'object', properties: [
+                    new OA\Property(property: 'total', type: 'integer'),
+                    new OA\Property(property: 'per_page', type: 'integer'),
+                    new OA\Property(property: 'current_page', type: 'integer'),
+                    new OA\Property(property: 'last_page', type: 'integer')
+                ])
+            ]
+        )
+    )]
+    public function listadoDetallado(Request $request, ListarAgendasDetalladasUseCaseInterface $useCase): JsonResponse
+    {
+        try {
+            $input = PaginacionAgendaInputDTO::fromRequest($request->all());
+            $paginacion = $useCase->execute($input);
+
+            return response()->json([
+                'success' => true,
+                'data'    => $paginacion->items(),
+                'meta'    => [
+                    'total'        => $paginacion->total(),
+                    'per_page'     => $paginacion->perPage(),
+                    'current_page' => $paginacion->currentPage(),
+                    'last_page'    => $paginacion->lastPage(),
+                ]
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
         }
     }
 }

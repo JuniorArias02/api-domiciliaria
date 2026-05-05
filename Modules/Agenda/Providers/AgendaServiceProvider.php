@@ -17,6 +17,8 @@ use Modules\Agenda\Infrastructure\Repositories\VisitaMasivaRepository;
 
 use Modules\Agenda\Application\Contracts\CrearAgendaMasivaUseCaseInterface;
 use Modules\Agenda\Application\UseCases\CrearAgendaMasivaUseCase;
+use Modules\Agenda\Application\Contracts\ListarAgendasDetalladasUseCaseInterface;
+use Modules\Agenda\Application\UseCases\ListarAgendasDetalladasUseCase;
 
 class AgendaServiceProvider extends ServiceProvider
 {
@@ -35,6 +37,7 @@ class AgendaServiceProvider extends ServiceProvider
         $this->app->bind(CrearAgendaCompletaUseCaseInterface::class, CrearAgendaCompletaUseCase::class);
         $this->app->bind(ListarAgendasPaginadasUseCaseInterface::class, ListarAgendasPaginadasUseCase::class);
         $this->app->bind(CrearAgendaMasivaUseCaseInterface::class, CrearAgendaMasivaUseCase::class);
+        $this->app->bind(ListarAgendasDetalladasUseCaseInterface::class, ListarAgendasDetalladasUseCase::class);
     }
 
     /**
