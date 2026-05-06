@@ -101,4 +101,50 @@ class DashboardRepository implements DashboardRepositoryInterface
     {
         return []; // Tablas de laboratorios y telexperticias eliminadas
     }
+
+    public function obtenerIndicadoresDashboard(): array
+    {
+        // 1. Agendas totales
+        $totalAgendas = DB::table('visitas_domiciliarias')->count();
+
+        // 2. Atendidos (COMPLETADA)
+        $totalAtendidos = DB::table('visitas_domiciliarias')
+            ->where('estado', 'COMPLETADA')
+            ->count();
+
+        // 3. Próximas agendas (PROGRAMADA, REPROGRAMADA)
+        $totalProximas = DB::table('visitas_domiciliarias')
+            ->whereIn('estado', ['PROGRAMADA', 'REPROGRAMADA'])
+            ->count();
+
+        // 4. Agendas a vencerse (entre 10 y 30 días y con sesiones pendientes)
+        $subqueryRealizadas = DB::table('visitas_domiciliarias')
+            ->select('id_orden_servicio', DB::raw('COUNT(*) as realizadas'))
+            ->where('estado', 'COMPLETADA')
+            ->groupBy('id_orden_servicio');
+
+        $agendasAVencer = DB::table('visitas_domiciliarias as v')
+            ->join('ordenes_servicios as os', 'os.id_orden_servicio', '=', 'v.id_orden_servicio')
+            ->leftJoinSub($subqueryRealizadas, 'vc', function ($join) {
+                $join->on('vc.id_orden_servicio', '=', 'os.id_orden_servicio');
+            })
+            ->whereIn('v.estado', ['PROGRAMADA', 'REPROGRAMADA'])
+            ->whereRaw('DATEDIFF(v.fecha_programada, NOW()) BETWEEN 10 AND 30')
+            ->whereRaw('COALESCE(vc.realizadas, 0) < os.numero_sesiones')
+            ->select(
+                'v.id_visita',
+                'v.id_orden_servicio',
+                'v.fecha_programada',
+                DB::raw('DATEDIFF(v.fecha_programada, NOW()) AS dias_faltantes')
+            )
+            ->get();
+
+        return [
+            'total_agendas' => $totalAgendas,
+            'total_atendidos' => $totalAtendidos,
+            'total_proximas' => $totalProximas,
+            'total_a_vencer' => $agendasAVencer->count(),
+            'listado_a_vencer' => $agendasAVencer
+        ];
+    }
 }

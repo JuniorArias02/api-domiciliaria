@@ -9,4 +9,5 @@ interface DashboardRepositoryInterface
     public function obtenerDemografia(): array;
     public function obtenerGestionRecursos(): array;
     public function obtenerControlCalidad(): array;
+    public function obtenerIndicadoresDashboard(): array;
 }
