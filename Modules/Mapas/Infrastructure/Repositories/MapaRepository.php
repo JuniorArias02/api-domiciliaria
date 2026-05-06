@@ -3,6 +3,8 @@
 namespace Modules\Mapas\Infrastructure\Repositories;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use Modules\Mapas\Domain\Contracts\MapaRepositoryInterface;
 use Modules\Mapas\Infrastructure\Services\RutaOptimizationService;
 
@@ -144,7 +146,20 @@ class MapaRepository implements MapaRepositoryInterface
         $datos = $query->get()->toArray();
 
         // Delegamos la lógica de contador diario al Service
-        return $this->optimizationService->asignarOrdenVisitaDiario($datos);
+        $procesados = $this->optimizationService->asignarOrdenVisitaDiario($datos);
+
+        // Paginación manual para cumplir con el contrato esperado por el Controller
+        $perPage = (int) ($filtros['per_page'] ?? 200);
+        $currentPage = (int) ($filtros['page'] ?? Paginator::resolveCurrentPage() ?: 1);
+        $offset = ($currentPage - 1) * $perPage;
+
+        return new LengthAwarePaginator(
+            array_slice($procesados, $offset, $perPage),
+            count($procesados),
+            $perPage,
+            $currentPage,
+            ['path' => Paginator::resolveCurrentPath(), 'query' => $filtros]
+        );
     }
 
     /**
