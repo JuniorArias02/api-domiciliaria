@@ -95,6 +95,8 @@ class OrdenEloquentRepository implements OrdenRepositoryInterface
                 'om.observacion',
                 'om.estado as estado_orden',
                 'i.autorizacion',
+                'i.id_ingreso',
+                'i.ingreso',
                 'p.id_paciente',
                 'p.identificacion',
                 'p.nombre_completo as nombre_paciente',

@@ -215,6 +215,8 @@ class AgendaController
                         new OA\Property(property: 'id_orden', type: 'integer'),
                         new OA\Property(property: 'fecha_orden', type: 'string'),
                         new OA\Property(property: 'autorizacion', type: 'string'),
+                        new OA\Property(property: 'id_ingreso', type: 'integer'),
+                        new OA\Property(property: 'ingreso', type: 'integer'),
                         new OA\Property(property: 'nombre_paciente', type: 'string'),
                         new OA\Property(property: 'ordenes_servicios', type: 'array', items: new OA\Items(
                             properties: [
