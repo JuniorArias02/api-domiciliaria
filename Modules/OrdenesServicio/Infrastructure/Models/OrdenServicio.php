@@ -37,4 +37,9 @@ class OrdenServicio extends Model
     {
         return $this->belongsTo(\Modules\Personal\Infrastructure\Models\Personal::class, 'id_profesional_asignado', 'id_personal');
     }
+
+    public function visitas()
+    {
+        return $this->hasMany(\Modules\VisitasDomiciliarias\Infrastructure\Models\VisitaDomiciliaria::class, 'id_orden_servicio', 'id_orden_servicio');
+    }
 }

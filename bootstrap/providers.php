@@ -25,4 +25,5 @@ return [
     Modules\OrdenesServicio\Providers\OrdenServicioServiceProvider::class,
     Modules\Departamentos\Providers\DepartamentoServiceProvider::class,
     Modules\Municipios\Providers\MunicipioServiceProvider::class,
+    Modules\RegistroPrograma\Providers\RegistroProgramaServiceProvider::class,
 ];
