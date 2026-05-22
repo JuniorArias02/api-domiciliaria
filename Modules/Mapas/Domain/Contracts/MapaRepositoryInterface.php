@@ -53,4 +53,10 @@ interface MapaRepositoryInterface
      * Obtiene los datos base para la optimización (Pacientes + Ordenes + Última Visita).
      */
     public function obtenerDatosBaseOptimizacion(array $filtros);
+
+    /**
+     * Obtiene los datos base para la predicción de visitas (Pacientes + Ordenes Servicios + Última Visita).
+     */
+    public function obtenerDatosBasePrediccion(array $filtros);
 }
+

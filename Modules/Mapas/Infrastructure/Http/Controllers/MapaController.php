@@ -292,6 +292,7 @@ class MapaController
     #[OA\Parameter(name: 'anio', description: 'Año a proyectar (por defecto actual)', in: 'query', schema: new OA\Schema(type: 'integer', example: 2026))]
     #[OA\Parameter(name: 'id_profesional', description: 'Filtrar por un profesional específico', in: 'query', schema: new OA\Schema(type: 'integer'))]
     #[OA\Parameter(name: 'id_servicio', description: 'Filtrar por ID de servicio', in: 'query', schema: new OA\Schema(type: 'integer'))]
+    #[OA\Parameter(name: 'ver_agendados', description: 'Si es true, optimiza solo las visitas programadas; si es false, predice según frecuencia y última visita', in: 'query', schema: new OA\Schema(type: 'boolean', default: false))]
     #[OA\Response(
         response: 200, 
         description: 'Rutas optimizadas agrupadas en bloques de 8 pacientes',
@@ -320,7 +321,7 @@ class MapaController
     public function optimizar(Request $request, OptimizarRutas $useCase)
     {
         try {
-            $params = $request->only(['mes', 'tipo_filtro', 'anio', 'id_profesional', 'id_servicio']);
+            $params = $request->only(['mes', 'tipo_filtro', 'anio', 'id_profesional', 'id_servicio', 'ver_agendados']);
             $resultado = $useCase->execute($params);
 
             return response()->json([

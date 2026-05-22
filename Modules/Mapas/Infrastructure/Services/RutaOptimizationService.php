@@ -119,41 +119,62 @@ class RutaOptimizationService
     public function predecirFechasPorFrecuencia(array $datos, int $mes, int $anio): array
     {
         $candidatos = [];
-        $inicioMes = new \DateTime("$anio-$mes-01");
-        $finMes = (clone $inicioMes)->modify('last day of this month');
 
         foreach ($datos as $row) {
             $item = (array) $row;
+            
             $frecuencia = (int) ($item['frecuencia_dias'] ?? 30);
-            if ($frecuencia <= 0) $frecuencia = 30;
+            if ($frecuencia <= 0) {
+                $frecuencia = 30;
+            }
+
+            $realizadas = (int) ($item['sesiones_completadas'] ?? 0);
+            $numeroSesiones = (int) ($item['numero_sesiones'] ?? 0);
+
+            // Determinar fecha base
+            $fechaOrden = !empty($item['fecha_inicio']) ? new \DateTime($item['fecha_inicio']) : (!empty($item['fecha_orden']) ? new \DateTime($item['fecha_orden']) : null);
             
             if (!empty($item['ultima_visita'])) {
-                $baseDate = new \DateTime($item['ultima_visita']);
-            } elseif (!empty($item['fecha_orden'])) {
-                $baseDate = new \DateTime($item['fecha_orden']);
-            } else {
-                // Si no hay nada, no podemos predecir con exactitud, lo omitimos o usamos fallback
-                continue; 
-            }
-
-            $proxima = clone $baseDate;
-            
-            // Si la base es anterior al mes, sumamos frecuencia hasta entrar al mes o pasarnos
-            if ($proxima < $inicioMes) {
-                while ($proxima < $inicioMes) {
-                    $proxima->modify("+{$frecuencia} days");
+                $fechaUltima = new \DateTime($item['ultima_visita']);
+                if ($fechaOrden) {
+                    $fechaBase = ($fechaUltima > $fechaOrden) ? $fechaUltima : $fechaOrden;
+                } else {
+                    $fechaBase = $fechaUltima;
                 }
             } else {
-                // Si la base ya está en el mes o después, la siguiente es base + frecuencia
-                $proxima->modify("+{$frecuencia} days");
+                $fechaBase = $fechaOrden;
             }
 
-            // Validar si la fecha proyectada cae en el mes solicitado
-            if ((int)$proxima->format('m') === $mes && (int)$proxima->format('Y') === $anio) {
-                $item['fecha_proyectada'] = $proxima->format('Y-m-d');
-                $candidatos[] = $item;
+            if (!$fechaBase) {
+                continue;
+            }
+
+            // Si ya completó las sesiones de la orden, proyectamos únicamente la siguiente sesión virtual (1 sola)
+            // Si todavía tiene pendientes, proyectamos las restantes de esta orden
+            if ($realizadas >= $numeroSesiones) {
+                $maxProyecciones = 1;
+            } else {
+                $maxProyecciones = $numeroSesiones - $realizadas;
+            }
+
+            $fechaCalculo = clone $fechaBase;
+
+            for ($k = 0; $k < $maxProyecciones; $k++) {
+                $fechaCalculo->modify("+{$frecuencia} days");
+
+                // Validar si la fecha proyectada cae en el mes y año solicitado
+                if ((int)$fechaCalculo->format('m') === $mes && (int)$fechaCalculo->format('Y') === $anio) {
+                    $virtualVisit = $item;
+                    $virtualVisit['virtual'] = true;
+                    $virtualVisit['estado'] = 'PENDIENTE';
+                    $virtualVisit['fecha_proyectada'] = $fechaCalculo->format('Y-m-d');
+                    $virtualVisit['fecha_programada'] = $fechaCalculo->format('Y-m-d');
+                    $virtualVisit['sesion_n'] = $realizadas + $k + 1;
+                    $candidatos[] = $virtualVisit;
+                }
             }
         }
+
         return $candidatos;
     }
 }

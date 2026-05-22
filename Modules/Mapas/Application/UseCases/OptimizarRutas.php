@@ -4,18 +4,22 @@ namespace Modules\Mapas\Application\UseCases;
 
 use Modules\Mapas\Domain\Contracts\MapaRepositoryInterface;
 use Modules\Mapas\Infrastructure\Services\RutaOptimizationService;
+use Modules\Servicios\Domain\Contracts\ServicioRepositoryInterface;
 
 class OptimizarRutas
 {
     private $repo;
     private $optimizationService;
+    private $servicioRepo;
 
     public function __construct(
         MapaRepositoryInterface $repo,
-        RutaOptimizationService $optimizationService
+        RutaOptimizationService $optimizationService,
+        ServicioRepositoryInterface $servicioRepo
     ) {
         $this->repo = $repo;
         $this->optimizationService = $optimizationService;
+        $this->servicioRepo = $servicioRepo;
     }
 
     /**
@@ -30,12 +34,28 @@ class OptimizarRutas
             throw new \InvalidArgumentException("El parámetro 'mes' es obligatorio.");
         }
 
+        if (!empty($params['id_servicio'])) {
+            $servicio = $this->servicioRepo->obtenerPorId((int) $params['id_servicio']);
+            if (!$servicio) {
+                throw new \InvalidArgumentException("El servicio seleccionado no existe o no es válido.");
+            }
+        }
+
         $mes = (int) $params['mes'];
         $anio = (int) ($params['anio'] ?? date('Y'));
         $tipoFiltro = $params['tipo_filtro'] ?? 'pacientes';
+        $verAgendados = filter_var($params['ver_agendados'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
-        // 1. Obtener candidatos del mes (Datos programados desde el repo)
-        $candidatos = $this->repo->obtenerDatosBaseOptimizacion($params);
+        if ($verAgendados) {
+            // 1. Obtener candidatos del mes (Datos programados desde el repo)
+            $candidatos = $this->repo->obtenerDatosBaseOptimizacion($params);
+        } else {
+            // 2. Obtener candidatos por predicción (basado en última visita y frecuencia)
+            $datosBase = $this->repo->obtenerDatosBasePrediccion($params);
+
+            // Predecir las próximas fechas
+            $candidatos = $this->optimizationService->predecirFechasPorFrecuencia($datosBase, $mes, $anio);
+        }
 
         if (empty($candidatos)) {
             return [];

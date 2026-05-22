@@ -249,8 +249,9 @@ class MapaRepository implements MapaRepositoryInterface
             ->whereNotNull('p.latitud')
             ->where('p.latitud', '!=', 0);
 
-        if (! empty($filtros['id_personal'])) {
-            $query->where('v.id_personal', $filtros['id_personal']);
+        $idProfesional = $filtros['id_personal'] ?? $filtros['id_profesional'] ?? null;
+        if (! empty($idProfesional)) {
+            $query->where('v.id_personal', $idProfesional);
         }
 
         if (! empty($filtros['id_servicio'])) {
@@ -261,6 +262,76 @@ class MapaRepository implements MapaRepositoryInterface
             'p.id_paciente', 'p.nombre_completo', 'p.latitud', 'p.longitud',
             'p.direccion', 'p.telefono', 'os.frecuencia_dias', 'om.fecha_orden', 'per.id_personal', 'per.nombre_completo'
         )->get()->toArray();
+    }
+
+    /**
+     * Obtiene los datos base para la predicción de visitas (Pacientes + Ordenes Servicios + Última Visita).
+     * No aplica algoritmos, solo extrae la información cruda.
+     */
+    public function obtenerDatosBasePrediccion(array $filtros)
+    {
+        $idProfesional = $filtros['id_personal'] ?? $filtros['id_profesional'] ?? null;
+
+        $latestOrderService = DB::table('ordenes_servicios as os_sub')
+            ->join('ordenes_medicas as om_sub', 'os_sub.id_orden', '=', 'om_sub.id_orden')
+            ->join('ingresos as i_sub', 'om_sub.id_ingreso', '=', 'i_sub.id_ingreso')
+            ->select('i_sub.id_paciente', 'os_sub.id_servicio', DB::raw('MAX(os_sub.id_orden_servicio) as max_id_orden_servicio'))
+            ->groupBy('i_sub.id_paciente', 'os_sub.id_servicio');
+
+        $ultimaVisitaGlobal = DB::table('visitas_domiciliarias as vd')
+            ->join('ordenes_servicios as os_sub2', 'vd.id_orden_servicio', '=', 'os_sub2.id_orden_servicio')
+            ->select('vd.id_paciente', 'os_sub2.id_servicio', DB::raw('MAX(vd.fecha_realizada) as ultima_visita'))
+            ->where('vd.estado', 'COMPLETADA')
+            ->groupBy('vd.id_paciente', 'os_sub2.id_servicio');
+
+        $sesionesActuales = DB::table('visitas_domiciliarias')
+            ->select('id_orden_servicio', DB::raw('COUNT(*) as sesiones_completadas'))
+            ->where('estado', 'COMPLETADA')
+            ->groupBy('id_orden_servicio');
+
+        $query = DB::table('ordenes_servicios as os')
+            ->join('ordenes_medicas as om', 'os.id_orden', '=', 'om.id_orden')
+            ->join('ingresos as i', 'om.id_ingreso', '=', 'i.id_ingreso')
+            ->join('pacientes as p', 'i.id_paciente', '=', 'p.id_paciente')
+            ->joinSub($latestOrderService, 'los', 'os.id_orden_servicio', '=', 'los.max_id_orden_servicio')
+            ->leftJoin('servicios as s', 'os.id_servicio', '=', 's.id_servicio')
+            ->leftJoin('personal as per', 'os.id_profesional_asignado', '=', 'per.id_personal')
+            ->leftJoinSub($ultimaVisitaGlobal, 'uv', function ($join) {
+                $join->on('p.id_paciente', '=', 'uv.id_paciente')
+                     ->on('os.id_servicio', '=', 'uv.id_servicio');
+            })
+            ->leftJoinSub($sesionesActuales, 'sa', function ($join) {
+                $join->on('os.id_orden_servicio', '=', 'sa.id_orden_servicio');
+            })
+            ->select(
+                'p.id_paciente',
+                'p.nombre_completo as paciente',
+                'p.latitud',
+                'p.longitud',
+                'p.direccion',
+                'p.telefono',
+                'os.frecuencia_dias',
+                'os.numero_sesiones',
+                'os.fecha_inicio',
+                'om.fecha_orden',
+                's.nombre_servicio as servicio',
+                'per.id_personal',
+                'per.nombre_completo as nombre_profesional',
+                'uv.ultima_visita',
+                DB::raw('COALESCE(sa.sesiones_completadas, 0) as sesiones_completadas')
+            )
+            ->whereNotNull('p.latitud')
+            ->where('p.latitud', '!=', 0);
+
+        if (! empty($idProfesional)) {
+            $query->where('os.id_profesional_asignado', $idProfesional);
+        }
+
+        if (! empty($filtros['id_servicio'])) {
+            $query->where('os.id_servicio', $filtros['id_servicio']);
+        }
+
+        return $query->get()->toArray();
     }
 
     /**
