@@ -56,7 +56,12 @@ interface MapaRepositoryInterface
 
     /**
      * Obtiene los datos base para la predicción de visitas (Pacientes + Ordenes Servicios + Última Visita).
+     * No aplica algoritmos, solo extrae la información cruda.
      */
     public function obtenerDatosBasePrediccion(array $filtros);
-}
 
+    /**
+     * Obtiene todas las visitas que están en estado PROGRAMADA para un mes, año, servicio y opcionalmente profesional.
+     */
+    public function obtenerVisitasProgramadas(array $filtros);
+}

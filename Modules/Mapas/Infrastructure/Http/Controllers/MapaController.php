@@ -12,6 +12,7 @@ use Modules\Mapas\Application\UseCases\OptimizarRutasMesMetodoOrden;
 use Modules\Mapas\Application\UseCases\OptimizarRutasMesCercania;
 use Modules\Mapas\Application\UseCases\OptimizarRutaPaciente;
 use Modules\Mapas\Application\UseCases\OptimizarRutas;
+use Modules\Mapas\Application\UseCases\ObtenerVisitasProgramadas;
 use OpenApi\Attributes as OA;
 
 class MapaController
@@ -322,6 +323,67 @@ class MapaController
     {
         try {
             $params = $request->only(['mes', 'tipo_filtro', 'anio', 'id_profesional', 'id_servicio', 'ver_agendados']);
+            $resultado = $useCase->execute($params);
+
+            return response()->json([
+                'success' => true,
+                'total'   => count($resultado),
+                'data'    => $resultado
+            ], 200);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+    }
+
+    #[OA\Get(
+        path: '/api/v1/mapas/visitas-programadas',
+        summary: 'Obtener todas las visitas en estado PROGRAMADA para un mes, año y servicio',
+        security: [['bearerAuth' => []]],
+        tags: ['Mapas']
+    )]
+    #[OA\Parameter(name: 'mes', description: 'Mes a consultar (1-12)', in: 'query', required: true, schema: new OA\Schema(type: 'integer', example: 5))]
+    #[OA\Parameter(name: 'anio', description: 'Año a consultar', in: 'query', schema: new OA\Schema(type: 'integer', example: 2026))]
+    #[OA\Parameter(name: 'id_servicio', description: 'Filtrar por Servicio Médico', in: 'query', schema: new OA\Schema(type: 'integer'))]
+    #[OA\Parameter(name: 'id_personal', description: 'Filtrar por Profesional asignado', in: 'query', schema: new OA\Schema(type: 'integer'))]
+    #[OA\Response(
+        response: 200,
+        description: 'Lista de visitas programadas encontradas',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'success', type: 'boolean', example: true),
+                new OA\Property(property: 'total', type: 'integer', example: 10),
+                new OA\Property(
+                    property: 'data',
+                    type: 'array',
+                    items: new OA\Items(
+                        properties: [
+                            new OA\Property(property: 'id_visita', type: 'integer'),
+                            new OA\Property(property: 'id_paciente', type: 'integer'),
+                            new OA\Property(property: 'paciente', type: 'string'),
+                            new OA\Property(property: 'latitud', type: 'number'),
+                            new OA\Property(property: 'longitud', type: 'number'),
+                            new OA\Property(property: 'direccion', type: 'string'),
+                            new OA\Property(property: 'telefono', type: 'string'),
+                            new OA\Property(property: 'id_orden_servicio', type: 'integer'),
+                            new OA\Property(property: 'frecuencia_dias', type: 'integer'),
+                            new OA\Property(property: 'id_servicio', type: 'integer'),
+                            new OA\Property(property: 'nombre_servicio', type: 'string'),
+                            new OA\Property(property: 'id_personal', type: 'integer', nullable: true),
+                            new OA\Property(property: 'nombre_profesional', type: 'string', nullable: true),
+                            new OA\Property(property: 'fecha_programada', type: 'string'),
+                            new OA\Property(property: 'estado', type: 'string')
+                        ]
+                    )
+                )
+            ]
+        )
+    )]
+    public function getVisitasProgramadas(Request $request, ObtenerVisitasProgramadas $useCase)
+    {
+        try {
+            $params = $request->only(['mes', 'anio', 'id_personal', 'id_profesional', 'id_servicio']);
             $resultado = $useCase->execute($params);
 
             return response()->json([

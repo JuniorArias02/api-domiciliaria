@@ -409,4 +409,50 @@ class MapaRepository implements MapaRepositoryInterface
     {
         return [];
     }
+
+    public function obtenerVisitasProgramadas(array $filtros)
+    {
+        $mes = $filtros['mes'] ?? date('m');
+        $anio = $filtros['anio'] ?? date('Y');
+
+        $query = DB::table('visitas_domiciliarias as v')
+            ->join('pacientes as p', 'v.id_paciente', '=', 'p.id_paciente')
+            ->join('ordenes_servicios as os', 'v.id_orden_servicio', '=', 'os.id_orden_servicio')
+            ->leftJoin('servicios as s', 'os.id_servicio', '=', 's.id_servicio')
+            ->leftJoin('personal as per', 'v.id_personal', '=', 'per.id_personal')
+            ->select(
+                'v.id_visita',
+                'p.id_paciente',
+                'p.nombre_completo as paciente',
+                'p.latitud',
+                'p.longitud',
+                'p.direccion',
+                'p.telefono',
+                'os.id_orden_servicio',
+                'os.frecuencia_dias',
+                's.id_servicio',
+                's.nombre_servicio',
+                's.codigo_servicio',
+                'per.id_personal',
+                'per.nombre_completo as nombre_profesional',
+                'v.fecha_programada',
+                'v.estado'
+            )
+            ->where('v.estado', 'PROGRAMADA')
+            ->whereMonth('v.fecha_programada', $mes)
+            ->whereYear('v.fecha_programada', $anio)
+            ->whereNotNull('p.latitud')
+            ->where('p.latitud', '!=', 0);
+
+        $idProfesional = $filtros['id_personal'] ?? $filtros['id_profesional'] ?? null;
+        if (! empty($idProfesional)) {
+            $query->where('v.id_personal', $idProfesional);
+        }
+
+        if (! empty($filtros['id_servicio'])) {
+            $query->where('os.id_servicio', $filtros['id_servicio']);
+        }
+
+        return $query->get()->toArray();
+    }
 }
