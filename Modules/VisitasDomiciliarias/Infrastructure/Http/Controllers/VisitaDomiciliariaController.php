@@ -7,6 +7,7 @@ use Modules\VisitasDomiciliarias\Application\UseCases\CrearVisitaDomiciliaria;
 use Modules\VisitasDomiciliarias\Application\UseCases\ActualizarVisitaDomiciliaria;
 use Modules\VisitasDomiciliarias\Application\UseCases\EliminarVisitaDomiciliaria;
 use Modules\VisitasDomiciliarias\Application\UseCases\ListarVisitasDomiciliarias;
+use Modules\VisitasDomiciliarias\Application\UseCases\CompletarVisitaDomiciliaria;
 use OpenApi\Attributes as OA;
 
 class VisitaDomiciliariaController
@@ -121,4 +122,25 @@ class VisitaDomiciliariaController
             return response()->json(['error' => $e->getMessage()], $status);
         }
     }
+
+    #[OA\Patch(
+        path: '/api/v1/visitas-domiciliarias/{id}/completar',
+        summary: 'Completar una visita domiciliaria',
+        security: [['bearerAuth' => []]],
+        tags: ['Visitas Domiciliarias']
+    )]
+    #[OA\Parameter(name: 'id', description: 'ID de la visita', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))]
+    #[OA\Response(response: 200, description: 'Visita completada exitosamente')]
+    public function completar($id, CompletarVisitaDomiciliaria $useCase)
+    {
+        try {
+            $visita = $useCase->execute((int)$id);
+            return response()->json(['message' => 'Visita completada exitosamente', 'data' => $visita], 200);
+        } catch (\Exception $e) {
+            $status = $e->getCode() ?: 400;
+            $status = $status >= 400 && $status < 600 ? $status : 400;
+            return response()->json(['error' => $e->getMessage()], $status);
+        }
+    }
 }
+

@@ -100,9 +100,6 @@ class CrearIngresoConSesiones
                 if (empty($servicioData['fecha_inicio'])) {
                     throw new Exception("La fecha de inicio es requerida en cada servicio");
                 }
-                if (empty($servicioData['fecha_programada'])) {
-                    throw new Exception("La fecha programada de la primera visita es requerida");
-                }
 
                 // Crear Orden de Servicio
                 $ordenServicio = $this->ordenServicioRepo->crear([
@@ -128,7 +125,7 @@ class CrearIngresoConSesiones
                     'id_orden_servicio' => $ordenServicio->id_orden_servicio,
                     'id_paciente' => $data['id_paciente'],
                     'id_personal' => $servicioData['id_profesional'],
-                    'fecha_programada' => $servicioData['fecha_programada'],
+                    'fecha_programada' => $servicioData['fecha_inicio'],
                     'id_usuario_programa' => $usuarioId,
                     'estado' => 'PROGRAMADA'
                 ]);

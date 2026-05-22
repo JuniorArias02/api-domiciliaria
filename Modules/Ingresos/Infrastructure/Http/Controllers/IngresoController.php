@@ -242,8 +242,7 @@ class IngresoController extends Controller
                                 new OA\Property(property: 'id_profesional', type: 'integer', example: 1),
                                 new OA\Property(property: 'numero_sesiones', type: 'integer', example: 1),
                                 new OA\Property(property: 'frecuencia_dias', type: 'integer', example: 1),
-                                new OA\Property(property: 'fecha_inicio', type: 'string', example: '2026-05-21 13:35'),
-                                new OA\Property(property: 'fecha_programada', type: 'string', example: '2026-05-21 13:35')
+                                new OA\Property(property: 'fecha_inicio', type: 'string', example: '2026-05-21 13:35')
                             ]
                         )
                     )
