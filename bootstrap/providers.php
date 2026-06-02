@@ -26,4 +26,5 @@ return [
     Modules\Departamentos\Providers\DepartamentoServiceProvider::class,
     Modules\Municipios\Providers\MunicipioServiceProvider::class,
     Modules\RegistroPrograma\Providers\RegistroProgramaServiceProvider::class,
+    Modules\Rutas\Providers\RutaServiceProvider::class,
 ];

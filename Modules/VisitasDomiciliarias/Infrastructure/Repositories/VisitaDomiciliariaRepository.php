@@ -42,4 +42,21 @@ class VisitaDomiciliariaRepository implements VisitaDomiciliariaRepositoryInterf
     {
         return VisitaDomiciliaria::all();
     }
+
+    public function existeVisitaAsignadaAPacienteEnFecha(int $idPaciente, string $fecha): bool
+    {
+        return VisitaDomiciliaria::where('id_paciente', $idPaciente)
+            ->whereNotNull('id_ruta')
+            ->whereHas('ruta', function ($query) use ($fecha) {
+                $query->where('fecha_ruta', $fecha);
+            })
+            ->exists();
+    }
+
+    public function contarVisitasActivasPorOrdenServicio(int $idOrdenServicio): int
+    {
+        return VisitaDomiciliaria::where('id_orden_servicio', $idOrdenServicio)
+            ->whereNotIn('estado', ['CANCELADA', 'NO_ATENDIDA'])
+            ->count();
+    }
 }

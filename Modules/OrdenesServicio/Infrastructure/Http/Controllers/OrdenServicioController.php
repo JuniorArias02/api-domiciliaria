@@ -6,11 +6,44 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\OrdenesServicio\Application\UseCases\CrearOrdenServicio;
 use Modules\OrdenesServicio\Application\UseCases\ListarOrdenesServicio;
+use Modules\OrdenesServicio\Application\UseCases\ObtenerServiciosPorAutorizacion;
 use OpenApi\Attributes as OA;
 
 #[OA\Tag(name: 'OrdenesServicio', description: 'Endpoints para la gestión de órdenes de servicios')]
 class OrdenServicioController extends Controller
 {
+    #[OA\Get(
+        path: '/api/v1/ordenes-servicio/pendientes-por-autorizacion',
+        summary: 'Obtener servicios con sesiones pendientes para una autorización',
+        security: [['bearerAuth' => []]],
+        tags: ['OrdenesServicio'],
+        parameters: [
+            new OA\Parameter(
+                name: 'autorizacion',
+                in: 'query',
+                required: true,
+                description: 'Código de autorización a consultar',
+                schema: new OA\Schema(type: 'string')
+            )
+        ]
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Lista de servicios con sesiones pendientes obtenida correctamente'
+    )]
+    public function serviciosPendientesPorAutorizacion(Request $request, ObtenerServiciosPorAutorizacion $useCase)
+    {
+        try {
+            $autorizacion = $request->query('autorizacion');
+            if (empty($autorizacion)) {
+                return response()->json(['error' => 'El parámetro autorizacion es requerido'], 400);
+            }
+            $servicios = $useCase->execute($autorizacion);
+            return response()->json(['data' => $servicios], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+    }
     #[OA\Get(
         path: '/api/v1/ordenes-servicio',
         summary: 'Listar todas las órdenes de servicio',

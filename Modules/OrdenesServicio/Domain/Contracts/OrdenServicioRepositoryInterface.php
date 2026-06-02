@@ -8,5 +8,6 @@ interface OrdenServicioRepositoryInterface
     public function crear(array $data);
     public function actualizar(int $id, array $data);
     public function obtenerPorId(int $id);
+    public function obtenerPorAutorizacion(string $autorizacion);
 }
 

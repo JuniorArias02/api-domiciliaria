@@ -13,6 +13,8 @@ class VisitaDomiciliaria extends Model
         'id_orden_servicio',
         'id_paciente',
         'id_personal',
+        'id_ruta',
+        'orden_visita',
         'id_usuario_programa',
         'fecha_programada',
         'fecha_realizada',
@@ -45,5 +47,10 @@ class VisitaDomiciliaria extends Model
     public function usuarioPrograma()
     {
         return $this->belongsTo(\Modules\Auth\Infrastructure\Models\Usuario::class, 'id_usuario_programa', 'id_usuario');
+    }
+
+    public function ruta()
+    {
+        return $this->belongsTo(\Modules\Rutas\Infrastructure\Models\Ruta::class, 'id_ruta', 'id_ruta');
     }
 }

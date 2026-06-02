@@ -31,5 +31,25 @@ class OrdenServicioRepository implements OrdenServicioRepositoryInterface
     {
         return OrdenServicio::find($id);
     }
+
+    public function obtenerPorAutorizacion(string $autorizacion)
+    {
+        return OrdenServicio::select('ordenes_servicios.*')
+            ->join('ordenes_medicas', 'ordenes_servicios.id_orden', '=', 'ordenes_medicas.id_orden')
+            ->join('ingresos', 'ordenes_medicas.id_ingreso', '=', 'ingresos.id_ingreso')
+            ->where('ingresos.autorizacion', $autorizacion)
+            ->with(['servicio', 'visitas' => function ($query) {
+                $query->whereNotIn('estado', ['CANCELADA', 'NO_ATENDIDA']);
+            }])
+            ->get()
+            ->map(function ($orden) {
+                $orden->sesiones_realizadas = $orden->visitas->count();
+                $orden->sesiones_pendientes = max(0, $orden->numero_sesiones - $orden->sesiones_realizadas);
+                return $orden;
+            })
+            ->filter(function ($orden) {
+                return $orden->sesiones_pendientes > 0;
+            })->values();
+    }
 }
 

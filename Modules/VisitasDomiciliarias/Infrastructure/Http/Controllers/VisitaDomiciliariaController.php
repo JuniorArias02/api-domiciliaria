@@ -68,6 +68,44 @@ class VisitaDomiciliariaController
         }
     }
 
+    #[OA\Post(
+        path: '/api/v1/visitas-domiciliarias/por-orden-servicio',
+        summary: 'Programar nueva visita domiciliaria validando sesiones pendientes',
+        security: [['bearerAuth' => []]],
+        tags: ['Visitas Domiciliarias']
+    )]
+    #[OA\RequestBody(
+        required: true,
+        content: new OA\MediaType(
+            mediaType: 'application/json',
+            schema: new OA\Schema(
+                required: ['id_paciente', 'id_personal', 'id_orden_servicio', 'fecha_programada'],
+                properties: [
+                    new OA\Property(property: 'id_orden_servicio', type: 'integer', example: 2),
+                    new OA\Property(property: 'id_paciente', type: 'integer', example: 5),
+                    new OA\Property(property: 'id_personal', type: 'integer', example: 3),
+                    new OA\Property(property: 'id_usuario_programa', type: 'integer', example: 1),
+                    new OA\Property(property: 'fecha_programada', type: 'string', format: 'date-time', example: '2026-10-15 08:30:00'),
+                    new OA\Property(property: 'estado', type: 'string', example: 'PROGRAMADA'),
+                    new OA\Property(property: 'observaciones', type: 'string', example: 'Verificar acceso en porteria')
+                ]
+            )
+        )
+    )]
+    #[OA\Response(response: 201, description: 'Visita programada exitosamente')]
+    #[OA\Response(response: 400, description: 'El servicio seleccionado ya no tiene sesiones pendientes')]
+    public function storePorOrdenServicio(Request $request, \Modules\VisitasDomiciliarias\Application\UseCases\CrearVisitaConSesionesPendientes $useCase)
+    {
+        try {
+            $visita = $useCase->execute($request->all());
+            return response()->json(['message' => 'Visita programada exitosamente validando sesiones', 'data' => $visita], 201);
+        } catch (\Exception $e) {
+            $status = $e->getCode() ?: 400;
+            $status = $status >= 400 && $status < 600 ? $status : 400;
+            return response()->json(['error' => $e->getMessage()], $status);
+        }
+    }
+
     #[OA\Put(
         path: '/api/v1/visitas-domiciliarias/{id}',
         summary: 'Actualizar una visita domiciliaria (Check-in/Check-out o Cancelación)',
