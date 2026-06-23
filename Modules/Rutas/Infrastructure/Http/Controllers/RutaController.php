@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Modules\Rutas\Application\UseCases\CrearRuta;
 use Modules\Rutas\Application\UseCases\ObtenerRuta;
 use Modules\Rutas\Application\UseCases\ListarRutas;
+use Modules\Rutas\Application\UseCases\ExportarRutasExcel;
+use Maatwebsite\Excel\Facades\Excel;
 use OpenApi\Attributes as OA;
 
 class RutaController
@@ -89,6 +91,32 @@ class RutaController
         try {
             $ruta = $useCase->execute((int)$id);
             return response()->json(['data' => $ruta], 200);
+        } catch (\Exception $e) {
+            $status = $e->getCode() ?: 400;
+            $status = $status >= 400 && $status < 600 ? $status : 400;
+            return response()->json(['error' => $e->getMessage()], $status);
+        }
+    }
+    #[OA\Get(
+        path: '/api/v1/rutas/exportar/excel',
+        summary: 'Exportar las rutas a un archivo Excel',
+        security: [['bearerAuth' => []]],
+        tags: ['Rutas']
+    )]
+    #[OA\Response(
+        response: 200, 
+        description: 'Archivo Excel con las rutas',
+        content: new OA\MediaType(
+            mediaType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            schema: new OA\Schema(type: 'string', format: 'binary')
+        )
+    )]
+    #[OA\Response(response: 400, description: 'Error al exportar las rutas')]
+    public function exportExcel(ExportarRutasExcel $useCase)
+    {
+        try {
+            $export = $useCase->execute();
+            return Excel::download($export, 'rutas_' . date('Y_m_d_H_i_s') . '.xlsx');
         } catch (\Exception $e) {
             $status = $e->getCode() ?: 400;
             $status = $status >= 400 && $status < 600 ? $status : 400;

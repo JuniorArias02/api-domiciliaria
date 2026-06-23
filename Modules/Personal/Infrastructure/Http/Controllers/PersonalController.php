@@ -8,6 +8,8 @@ use Modules\Personal\Application\UseCases\ActualizarPersonal;
 use Modules\Personal\Application\UseCases\EliminarPersonal;
 use Modules\Personal\Application\UseCases\ListarPersonal;
 use Modules\Personal\Application\UseCases\BuscarPersonalUseCase;
+use Modules\Personal\Application\UseCases\ObtenerEstadisticasCumplimientoUseCase;
+use Modules\Personal\Application\UseCases\ObtenerIngresosInvolucradosUseCase;
 use OpenApi\Attributes as OA;
 
 class PersonalController
@@ -169,6 +171,52 @@ class PersonalController
             return response()->json(['data' => $personal], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
+        }
+    }
+
+    #[OA\Get(
+        path: '/api/v1/personal/{id}/estadisticas',
+        summary: 'Obtener estadísticas de cumplimiento de un profesional',
+        security: [['bearerAuth' => []]],
+        tags: ['Personal']
+    )]
+    #[OA\Parameter(name: 'id', description: 'ID del personal', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))]
+    #[OA\Response(
+        response: 200,
+        description: 'Estadísticas de cumplimiento'
+    )]
+    public function getEstadisticas($id, ObtenerEstadisticasCumplimientoUseCase $useCase)
+    {
+        try {
+            $estadisticas = $useCase->execute((int)$id);
+            return response()->json(['data' => $estadisticas], 200);
+        } catch (\Exception $e) {
+            $status = $e->getCode() ?: 400;
+            $status = $status >= 400 && $status < 600 ? $status : 400;
+            return response()->json(['error' => $e->getMessage()], $status);
+        }
+    }
+
+    #[OA\Get(
+        path: '/api/v1/personal/{id}/ingresos',
+        summary: 'Obtener ingresos en los que el profesional se encuentra involucrado',
+        security: [['bearerAuth' => []]],
+        tags: ['Personal']
+    )]
+    #[OA\Parameter(name: 'id', description: 'ID del personal', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))]
+    #[OA\Response(
+        response: 200,
+        description: 'Lista de ingresos con información asociada'
+    )]
+    public function getIngresosInvolucrados($id, ObtenerIngresosInvolucradosUseCase $useCase)
+    {
+        try {
+            $ingresos = $useCase->execute((int)$id);
+            return response()->json(['data' => $ingresos], 200);
+        } catch (\Exception $e) {
+            $status = $e->getCode() ?: 400;
+            $status = $status >= 400 && $status < 600 ? $status : 400;
+            return response()->json(['error' => $e->getMessage()], $status);
         }
     }
 }
