@@ -343,4 +343,8 @@ return new class extends Migration
         Schema::dropIfExists('aseguradoras');
         Schema::dropIfExists('zonas');
     }
+
+
+
+    
 };

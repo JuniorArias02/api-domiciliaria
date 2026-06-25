@@ -15,6 +15,7 @@ class OrdenServicio extends Model
 
     protected $fillable = [
         'id_orden',
+        'id_orden_servicio_anterior',
         'id_servicio',
         'id_profesional_asignado',
         'numero_sesiones',
@@ -25,6 +26,7 @@ class OrdenServicio extends Model
 
     protected $casts = [
         'id_orden' => 'integer',
+        'id_orden_servicio_anterior' => 'integer',
         'id_servicio' => 'integer',
         'id_profesional_asignado' => 'integer',
         'numero_sesiones' => 'integer',
@@ -45,5 +47,10 @@ class OrdenServicio extends Model
     public function visitas()
     {
         return $this->hasMany(VisitaDomiciliaria::class, 'id_orden_servicio', 'id_orden_servicio');
+    }
+
+    public function servicioAnterior()
+    {
+        return $this->belongsTo(OrdenServicio::class, 'id_orden_servicio_anterior', 'id_orden_servicio');
     }
 }

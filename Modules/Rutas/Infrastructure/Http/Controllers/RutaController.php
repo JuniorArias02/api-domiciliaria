@@ -7,6 +7,9 @@ use Modules\Rutas\Application\UseCases\CrearRuta;
 use Modules\Rutas\Application\UseCases\ObtenerRuta;
 use Modules\Rutas\Application\UseCases\ListarRutas;
 use Modules\Rutas\Application\UseCases\ExportarRutasExcel;
+use Modules\Rutas\Application\UseCases\EditarRuta;
+use Modules\Rutas\Application\UseCases\EliminarRuta;
+use Modules\Rutas\Application\UseCases\AsignarRuta;
 use Maatwebsite\Excel\Facades\Excel;
 use OpenApi\Attributes as OA;
 
@@ -117,6 +120,90 @@ class RutaController
         try {
             $export = $useCase->execute();
             return Excel::download($export, 'rutas_' . date('Y_m_d_H_i_s') . '.xlsx');
+        } catch (\Exception $e) {
+            $status = $e->getCode() ?: 400;
+            $status = $status >= 400 && $status < 600 ? $status : 400;
+            return response()->json(['error' => $e->getMessage()], $status);
+        }
+    }
+
+    #[OA\Put(
+        path: '/api/v1/rutas/{id}',
+        summary: 'Editar una ruta existente',
+        security: [['bearerAuth' => []]],
+        tags: ['Rutas']
+    )]
+    #[OA\Parameter(name: 'id', description: 'ID de la ruta a editar', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))]
+    #[OA\RequestBody(
+        required: true,
+        content: new OA\MediaType(
+            mediaType: 'application/json',
+            schema: new OA\Schema(
+                properties: [
+                    new OA\Property(property: 'id_personal', type: 'integer', example: 1),
+                    new OA\Property(property: 'fecha_ruta', type: 'string', format: 'date', example: '2026-05-25'),
+                    new OA\Property(property: 'estado', type: 'string', example: 'EN_DISENO'),
+                    new OA\Property(
+                        property: 'visitas',
+                        type: 'array',
+                        items: new OA\Items(
+                            properties: [
+                                new OA\Property(property: 'id_visita', type: 'integer', example: 3627),
+                                new OA\Property(property: 'orden_visita', type: 'integer', example: 1)
+                            ],
+                            type: 'object'
+                        )
+                    )
+                ]
+            )
+        )
+    )]
+    #[OA\Response(response: 200, description: 'Ruta editada exitosamente')]
+    public function update(Request $request, $id, EditarRuta $useCase)
+    {
+        try {
+            $ruta = $useCase->execute((int)$id, $request->all());
+            return response()->json(['message' => 'Ruta editada exitosamente', 'data' => $ruta], 200);
+        } catch (\Exception $e) {
+            $status = $e->getCode() ?: 400;
+            $status = $status >= 400 && $status < 600 ? $status : 400;
+            return response()->json(['error' => $e->getMessage()], $status);
+        }
+    }
+
+    #[OA\Delete(
+        path: '/api/v1/rutas/{id}',
+        summary: 'Eliminar una ruta',
+        security: [['bearerAuth' => []]],
+        tags: ['Rutas']
+    )]
+    #[OA\Parameter(name: 'id', description: 'ID de la ruta a eliminar', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))]
+    #[OA\Response(response: 200, description: 'Ruta eliminada exitosamente')]
+    public function destroy($id, EliminarRuta $useCase)
+    {
+        try {
+            $useCase->execute((int)$id);
+            return response()->json(['message' => 'Ruta eliminada exitosamente'], 200);
+        } catch (\Exception $e) {
+            $status = $e->getCode() ?: 400;
+            $status = $status >= 400 && $status < 600 ? $status : 400;
+            return response()->json(['error' => $e->getMessage()], $status);
+        }
+    }
+
+    #[OA\Patch(
+        path: '/api/v1/rutas/{id}/asignar',
+        summary: 'Asignar una ruta para enfatizar que está lista para ejecutarse',
+        security: [['bearerAuth' => []]],
+        tags: ['Rutas']
+    )]
+    #[OA\Parameter(name: 'id', description: 'ID de la ruta', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))]
+    #[OA\Response(response: 200, description: 'Estado de ruta cambiado a ASIGNADA')]
+    public function asignar($id, AsignarRuta $useCase)
+    {
+        try {
+            $ruta = $useCase->execute((int)$id);
+            return response()->json(['message' => 'Ruta asignada exitosamente', 'data' => $ruta], 200);
         } catch (\Exception $e) {
             $status = $e->getCode() ?: 400;
             $status = $status >= 400 && $status < 600 ? $status : 400;

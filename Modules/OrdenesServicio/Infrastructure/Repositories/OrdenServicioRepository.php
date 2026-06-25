@@ -51,5 +51,66 @@ class OrdenServicioRepository implements OrdenServicioRepositoryInterface
                 return $orden->sesiones_pendientes > 0;
             })->values();
     }
+
+    public function obtenerHistorialPorPaciente(int $idPaciente, ?int $idServicio = null)
+    {
+        $query = OrdenServicio::select(
+            'ordenes_servicios.id_orden_servicio',
+            'servicios.nombre_servicio',
+            'ingresos.id_ingreso',
+            'ingresos.fecha_ingreso'
+        )
+        ->join('ordenes_medicas', 'ordenes_medicas.id_orden', '=', 'ordenes_servicios.id_orden')
+        ->join('ingresos', 'ingresos.id_ingreso', '=', 'ordenes_medicas.id_ingreso')
+        ->join('servicios', 'servicios.id_servicio', '=', 'ordenes_servicios.id_servicio')
+        ->where('ingresos.id_paciente', $idPaciente);
+
+        if ($idServicio) {
+            $query->where('ordenes_servicios.id_servicio', $idServicio);
+        }
+
+        return $query->orderBy('ingresos.fecha_ingreso', 'desc')
+        ->limit(4)
+        ->get();
+    }
+
+    public function buscarContinuidades(int $idPaciente, array $filtros)
+    {
+        $query = OrdenServicio::select(
+            'ordenes_servicios.id_orden_servicio',
+            'servicios.nombre_servicio',
+            'ingresos.id_ingreso',
+            'ingresos.autorizacion',
+            'ingresos.fecha_ingreso'
+        )
+        ->join('ordenes_medicas', 'ordenes_medicas.id_orden', '=', 'ordenes_servicios.id_orden')
+        ->join('ingresos', 'ingresos.id_ingreso', '=', 'ordenes_medicas.id_ingreso')
+        ->join('servicios', 'servicios.id_servicio', '=', 'ordenes_servicios.id_servicio')
+        ->where('ingresos.id_paciente', $idPaciente);
+
+        if (isset($filtros['id_servicio'])) {
+            $query->where('ordenes_servicios.id_servicio', $filtros['id_servicio']);
+        }
+
+        if (isset($filtros['numero_ingreso'])) {
+            $query->where('ingresos.id_ingreso', $filtros['numero_ingreso']);
+        }
+
+        if (isset($filtros['autorizacion'])) {
+            $query->where('ingresos.autorizacion', 'like', '%' . $filtros['autorizacion'] . '%');
+        }
+
+        if (isset($filtros['mes_inicio'])) {
+            $mesInicio = $filtros['mes_inicio'] . '-01 00:00:00';
+            $query->where('ingresos.fecha_ingreso', '>=', $mesInicio);
+        }
+
+        if (isset($filtros['mes_fin'])) {
+            $mesFin = date('Y-m-t 23:59:59', strtotime($filtros['mes_fin'] . '-01'));
+            $query->where('ingresos.fecha_ingreso', '<=', $mesFin);
+        }
+
+        return $query->orderBy('ingresos.fecha_ingreso', 'desc')->get();
+    }
 }
 

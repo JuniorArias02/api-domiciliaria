@@ -5,6 +5,7 @@ namespace Modules\VisitasDomiciliarias\Application\UseCases;
 use Modules\VisitasDomiciliarias\Domain\Contracts\VisitaDomiciliariaRepositoryInterface;
 use Modules\OrdenesServicio\Domain\Contracts\OrdenServicioRepositoryInterface;
 use Modules\OrdenesMedicas\Domain\Contracts\OrdenMedicaRepositoryInterface;
+use Modules\Rutas\Domain\Contracts\RutaRepositoryInterface;
 use Exception;
 
 class CompletarVisitaDomiciliaria
@@ -12,15 +13,18 @@ class CompletarVisitaDomiciliaria
     private $repo;
     private $ordenServicioRepo;
     private $ordenMedicaRepo;
+    private $rutaRepo;
 
     public function __construct(
         VisitaDomiciliariaRepositoryInterface $repo,
         OrdenServicioRepositoryInterface $ordenServicioRepo,
-        OrdenMedicaRepositoryInterface $ordenMedicaRepo
+        OrdenMedicaRepositoryInterface $ordenMedicaRepo,
+        RutaRepositoryInterface $rutaRepo
     ) {
         $this->repo = $repo;
         $this->ordenServicioRepo = $ordenServicioRepo;
         $this->ordenMedicaRepo = $ordenMedicaRepo;
+        $this->rutaRepo = $rutaRepo;
     }
 
     public function execute(int $idVisita)
@@ -72,6 +76,27 @@ class CompletarVisitaDomiciliaria
                             }
                         }
                     }
+                }
+            }
+        }
+
+        // 4. Validar si todas las visitas de la ruta asociada están completadas
+        if ($visitaActualizada->id_ruta) {
+            $ruta = $this->rutaRepo->obtenerPorId($visitaActualizada->id_ruta);
+            if ($ruta && $ruta->visitas) {
+                $todasCompletadas = true;
+                foreach ($ruta->visitas as $visitaRuta) {
+                    // Si encontramos una visita de la ruta que no está COMPLETADA (ignorando la que se acaba de actualizar)
+                    if ($visitaRuta->id_visita !== $idVisita && $visitaRuta->estado !== 'COMPLETADA' && $visitaRuta->estado !== 'CANCELADA') {
+                        $todasCompletadas = false;
+                        break;
+                    }
+                }
+
+                if ($todasCompletadas) {
+                    $this->rutaRepo->actualizar($ruta->id_ruta, [
+                        'estado' => 'FINALIZADA'
+                    ]);
                 }
             }
         }
