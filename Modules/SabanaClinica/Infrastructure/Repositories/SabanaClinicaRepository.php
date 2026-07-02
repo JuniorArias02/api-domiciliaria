@@ -18,13 +18,6 @@ class SabanaClinicaRepository implements SabanaClinicaRepositoryInterface
                 'a.nombre as aseguradora',
                 'p.regimen',
                 'p.fecha_ingreso',
-                DB::raw('NULL as numero_tutela'),
-                DB::raw('NULL as servicio_tutela_autorizado'),
-                DB::raw('NULL as fecha_tutela'),
-                DB::raw('NULL as duracion_tutela'),
-                DB::raw('NULL as aux_enfer'),
-                DB::raw('NULL as auxiliar'),
-                DB::raw('NULL as nombre_familiar_cuidador'),
                 'p.tipo_documento',
                 'p.identificacion',
                 'p.fecha_nacimiento',
@@ -35,23 +28,40 @@ class SabanaClinicaRepository implements SabanaClinicaRepositoryInterface
                 'b.nombre as barrio',
                 'p.telefono',
                 'p.email as correo',
-                DB::raw('NULL as zona_comuna'),
                 'com.nombre as comuna',
-                DB::raw('NULL as servicios'),
-                DB::raw('NULL as tipo_servicio'),
-                DB::raw('NULL as remitido'), // Join complex as noted in rules
-                DB::raw('NULL as profesional_medico'),
-                DB::raw('NULL as medico'),
-                DB::raw('NULL as frecuencia_medico'),
-                DB::raw('NULL as barthel'),
-                DB::raw('NULL as observaciones'),
+                's.nombre_servicio as servicios',
+                's.nombre_servicio as tipo_servicio',
+                'c.nombre as profesional_medico',
+                'per.nombre_completo as medico',
+                'os.frecuencia_dias as frecuencia_medico',
+                'om.observacion as observaciones',
                 'p.url_google_maps as ubicacion_google_maps',
                 'p.estado'
             ])
             ->leftJoin('usuarios as u', 'p.id_madrina', '=', 'u.id_usuario')
             ->leftJoin('aseguradoras as a', 'p.id_aseguradora', '=', 'a.id_aseguradora')
             ->leftJoin('barrios as b', 'p.id_barrio', '=', 'b.id')
-            ->leftJoin('comunas as com', 'p.id_comuna', '=', 'com.id');
+            ->leftJoin('comunas as com', 'p.id_comuna', '=', 'com.id')
+            // 1. Último ingreso del paciente
+            ->leftJoin('ingresos as i', function($join) {
+                $join->on('i.id_paciente', '=', 'p.id_paciente')
+                     ->whereRaw('i.id_ingreso = (SELECT MAX(id_ingreso) FROM ingresos WHERE id_paciente = p.id_paciente)');
+            })
+            // 2. Última orden médica de ese ingreso
+            ->leftJoin('ordenes_medicas as om', function($join) {
+                $join->on('om.id_ingreso', '=', 'i.id_ingreso')
+                     ->whereRaw('om.id_orden = (SELECT MAX(id_orden) FROM ordenes_medicas WHERE id_ingreso = i.id_ingreso)');
+            })
+            // 3. Última orden de servicio asociada a la orden médica
+            ->leftJoin('ordenes_servicios as os', function($join) {
+                $join->on('os.id_orden', '=', 'om.id_orden')
+                     ->whereRaw("os.id_orden_servicio = (SELECT MAX(os2.id_orden_servicio) FROM ordenes_servicios os2 INNER JOIN servicios s2 ON os2.id_servicio = s2.id_servicio WHERE os2.id_orden = om.id_orden AND s2.codigo_servicio = '890101')");
+            })
+            // 4. Servicio prestado
+            ->leftJoin('servicios as s', 'os.id_servicio', '=', 's.id_servicio')
+            // 5. Personal asignado y su cargo
+            ->leftJoin('personal as per', 'os.id_profesional_asignado', '=', 'per.id_personal')
+            ->leftJoin('cargos as c', 'per.id_cargo', '=', 'c.id_cargo');
 
         // Apply dynamic filters if needed
         if (!empty($filtros['search'])) {
