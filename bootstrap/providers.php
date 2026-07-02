@@ -27,4 +27,5 @@ return [
     Modules\Municipios\Providers\MunicipioServiceProvider::class,
     Modules\RegistroPrograma\Providers\RegistroProgramaServiceProvider::class,
     Modules\Rutas\Providers\RutaServiceProvider::class,
+    Modules\SabanaClinica\Providers\SabanaClinicaServiceProvider::class,
 ];
