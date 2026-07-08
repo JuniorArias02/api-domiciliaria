@@ -28,4 +28,6 @@ return [
     Modules\RegistroPrograma\Providers\RegistroProgramaServiceProvider::class,
     Modules\Rutas\Providers\RutaServiceProvider::class,
     Modules\SabanaClinica\Providers\SabanaClinicaServiceProvider::class,
+    Modules\Continuidad\Providers\ContinuidadServiceProvider::class,
+    Modules\Gateway\Providers\GatewayServiceProvider::class,
 ];
