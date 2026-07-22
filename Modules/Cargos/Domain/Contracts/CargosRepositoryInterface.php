@@ -9,4 +9,5 @@ interface CargosRepositoryInterface
     public function eliminar(int $id);
     public function obtenerPorId(int $id);
     public function listar();
+    public function obtenerPorNombre(string $nombre);
 }

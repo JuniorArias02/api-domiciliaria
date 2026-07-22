@@ -9,4 +9,5 @@ interface PacienteRepositoryInterface
     public function eliminar(int $id);
     public function obtenerPorId(int $id);
     public function obtenerPaginado(int $porPagina, int $pagina, array $filtros = []);
+    public function buscar(string $query, int $limit = 10);
 }

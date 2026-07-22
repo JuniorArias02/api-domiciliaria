@@ -12,4 +12,5 @@ interface PersonalRepositoryInterface
     public function buscar(string $query, int $limit = 5);
     public function obtenerEstadisticasCumplimiento(int $id);
     public function obtenerIngresosInvolucrados(int $id);
+    public function obtenerIdPorNombre(string $nombre): ?int;
 }

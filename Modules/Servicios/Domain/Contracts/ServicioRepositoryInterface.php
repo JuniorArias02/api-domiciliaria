@@ -9,4 +9,5 @@ interface ServicioRepositoryInterface
     public function eliminar(int $id);
     public function obtenerPorId(int $id);
     public function listar();
+    public function obtenerCodigosServicios(): array;
 }

@@ -42,4 +42,9 @@ class CargosRepository implements CargosRepositoryInterface
     {
         return Cargo::all();
     }
+
+    public function obtenerPorNombre(string $nombre)
+    {
+        return Cargo::where('nombre', $nombre)->first();
+    }
 }

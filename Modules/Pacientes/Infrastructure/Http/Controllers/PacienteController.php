@@ -8,6 +8,7 @@ use Modules\Pacientes\Application\UseCases\ActualizarPaciente;
 use Modules\Pacientes\Application\UseCases\EliminarPaciente;
 use Modules\Pacientes\Application\UseCases\ActualizarUbicacion;
 use Modules\Pacientes\Application\UseCases\ObtenerPacientes;
+use Modules\Pacientes\Application\UseCases\BuscarPaciente;
 use OpenApi\Attributes as OA;
 
 class PacienteController
@@ -94,6 +95,56 @@ class PacienteController
                     'total'         => $resultado->total(),
                     'ultima_pagina' => $resultado->lastPage(),
                 ],
+            ], 200);
+        } catch (\Exception $e) {
+            $status = $e->getCode();
+            $status = ($status >= 400 && $status < 600) ? $status : 500;
+            return response()->json(['error' => $e->getMessage()], $status);
+        }
+    }
+
+    #[OA\Get(
+        path: '/api/v1/pacientes/buscar',
+        summary: 'Buscar pacientes por nombre o identificación (cédula) para autocompletado',
+        security: [['bearerAuth' => []]],
+        tags: ['Pacientes']
+    )]
+    #[OA\Parameter(
+        name: 'q',
+        description: 'Término de búsqueda (nombre o identificación)',
+        in: 'query',
+        required: true,
+        schema: new OA\Schema(type: 'string', example: 'Juan')
+    )]
+    #[OA\Parameter(
+        name: 'limit',
+        description: 'Límite de resultados',
+        in: 'query',
+        required: false,
+        schema: new OA\Schema(type: 'integer', default: 10, example: 5)
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Lista de pacientes coincidentes',
+        content: new OA\MediaType(
+            mediaType: 'application/json',
+            schema: new OA\Schema(
+                properties: [
+                    new OA\Property(property: 'data', type: 'array', items: new OA\Items(type: 'object'))
+                ]
+            )
+        )
+    )]
+    public function search(Request $request, BuscarPaciente $useCase)
+    {
+        try {
+            $query = $request->query('q', '');
+            $limit = (int) $request->query('limit', 10);
+            
+            $pacientes = $useCase->execute($query, $limit);
+            
+            return response()->json([
+                'data' => $pacientes
             ], 200);
         } catch (\Exception $e) {
             $status = $e->getCode();

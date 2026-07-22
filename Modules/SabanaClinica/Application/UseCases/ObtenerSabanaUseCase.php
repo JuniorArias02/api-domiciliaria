@@ -47,23 +47,19 @@ class ObtenerSabanaUseCase
         ];
 
         $meses = [
-            12 => 'Diciembre',
             1 => 'Enero',
             2 => 'Febrero',
             3 => 'Marzo',
             4 => 'Abril',
             5 => 'Mayo',
-            6 => 'Junio'
+            6 => 'Junio',
+            7 => 'Julio',
+            8 => 'Agosto',
+            9 => 'Septiembre',
+            10 => 'Octubre',
+            11 => 'Noviembre',
+            12 => 'Diciembre'
         ];
-
-        foreach ($meses as $num => $nombre) {
-            $columnas[] = [
-                'field' => 'fecha_atencion_'.strtolower($nombre), 
-                'title' => 'Fecha De Atencion '.strtoupper($nombre), 
-                'type' => 'string', 
-                'editable' => false
-            ];
-        }
 
         $items = collect($paginacion->items());
         $pacienteIds = $items->pluck('id_paciente')->filter()->toArray();
@@ -82,20 +78,66 @@ class ObtenerSabanaUseCase
                 ->groupBy('id_paciente');
         }
 
-        $rowsMapped = $items->map(function($row) use ($visitas, $meses) {
+        // Obtener todos los años presentes en las visitas de esta página para armar las columnas
+        $aniosPresentes = collect($visitas)->flatten()->map(function($v) {
+            return date('Y', strtotime($v->fecha));
+        })->unique()->sort()->values()->toArray();
+
+        if (empty($aniosPresentes)) {
+            $aniosPresentes = [date('Y')]; // Default al año actual si no hay visitas
+        }
+
+        // Construir columnas agrupadas por año
+        $columnasAtencion = [];
+        foreach ($aniosPresentes as $anio) {
+            $mesesDelAnio = [];
+            foreach ($meses as $num => $nombre) {
+                $mesesDelAnio[] = [
+                    'field' => 'atenciones.'.$anio.'.'.strtolower($nombre), 
+                    'title' => strtoupper($nombre), 
+                    'type' => 'string', 
+                    'editable' => false
+                ];
+            }
+            
+            $columnas[] = [
+                'title' => (string) $anio,
+                'isGroup' => true, // Bandera para que el frontend sepa que es un grupo colapsable
+                'children' => $mesesDelAnio
+            ];
+        }
+
+        $rowsMapped = $items->map(function($row) use ($visitas, $meses, $aniosPresentes) {
             $visitasPaciente = isset($visitas[$row->id_paciente]) ? collect($visitas[$row->id_paciente]) : collect();
             
-            foreach ($meses as $num => $nombre) {
-                // Buscamos todas las fechas que coincidan con el mes
-                $fechasMes = $visitasPaciente->filter(function($v) use ($num) {
-                    return $v->fecha && (int)date('n', strtotime($v->fecha)) === $num;
-                })->map(function($v) {
-                    return date('d/m/Y', strtotime($v->fecha));
-                })->unique()->implode(', ');
-                
-                $campo = 'fecha_atencion_'.strtolower($nombre);
-                $row->$campo = $fechasMes;
+            $atenciones = [];
+
+            foreach ($aniosPresentes as $anio) {
+                $atenciones[$anio] = [];
+                foreach ($meses as $num => $nombre) {
+                    // Buscamos todas las fechas que coincidan con el mes y el año
+                    $fechasMes = $visitasPaciente->filter(function($v) use ($num, $anio) {
+                        return $v->fecha && (int)date('n', strtotime($v->fecha)) === $num && date('Y', strtotime($v->fecha)) == $anio;
+                    })->map(function($v) {
+                        return date('d/m/Y', strtotime($v->fecha));
+                    })->unique()->implode(', ');
+                    
+                    $campoMes = strtolower($nombre);
+                    $atenciones[$anio][$campoMes] = $fechasMes;
+                }
             }
+            
+            // Asignamos el objeto de atenciones completo a la fila
+            $row->atenciones = $atenciones;
+
+            // Limpiamos campos viejos si existían en el objeto original (opcional)
+            foreach ($meses as $nombre) {
+                $oldField = 'fecha_atencion_'.strtolower($nombre);
+                if (isset($row->$oldField)) {
+                    unset($row->$oldField);
+                }
+            }
+
             return $row;
         });
 

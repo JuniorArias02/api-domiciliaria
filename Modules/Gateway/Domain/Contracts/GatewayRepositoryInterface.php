@@ -11,4 +11,12 @@ interface GatewayRepositoryInterface
      * @return array
      */
     public function consultarDetalleIngreso($idIngreso): array;
+
+    /**
+     * Busca personal (profesional) en el sistema externo por nombre
+     *
+     * @param string $nombre
+     * @return array
+     */
+    public function buscarUsuarioPorNombre(string $nombre): array;
 }

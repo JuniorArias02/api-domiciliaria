@@ -8,5 +8,6 @@ interface IngresoRepositoryInterface
     public function crear(array $data);
     public function obtenerAutorizacionesPorPaciente($idPaciente);
     public function existeAutorizacion(string $autorizacion): bool;
+    public function existePorNumeroIngreso(int $ingreso): bool;
     public function obtenerSiguienteNumeroIngreso(): int;
 }

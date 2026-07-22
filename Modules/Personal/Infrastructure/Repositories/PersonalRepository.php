@@ -113,4 +113,10 @@ class PersonalRepository implements PersonalRepositoryInterface
             ->orderBy('ingresos.fecha_ingreso', 'desc')
             ->get();
     }
+
+    public function obtenerIdPorNombre(string $nombre): ?int
+    {
+        $personal = Personal::where('nombre_completo', $nombre)->first();
+        return $personal ? $personal->id_personal : null;
+    }
 }

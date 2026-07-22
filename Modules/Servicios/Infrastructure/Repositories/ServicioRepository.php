@@ -57,4 +57,12 @@ class ServicioRepository implements ServicioRepositoryInterface
     {
         return Servicio::all();
     }
+
+    /**
+     * @return array
+     */
+    public function obtenerCodigosServicios(): array
+    {
+        return Servicio::where('estado', 1)->pluck('codigo_servicio')->toArray();
+    }
 }

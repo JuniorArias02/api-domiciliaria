@@ -35,6 +35,11 @@ class IngresoRepository implements IngresoRepositoryInterface
         return Ingreso::where('autorizacion', $autorizacion)->exists();
     }
 
+    public function existePorNumeroIngreso(int $ingreso): bool
+    {
+        return Ingreso::where('ingreso', $ingreso)->exists();
+    }
+
     public function obtenerSiguienteNumeroIngreso(): int
     {
         return (int) (Ingreso::max('ingreso') ?? 0) + 1;

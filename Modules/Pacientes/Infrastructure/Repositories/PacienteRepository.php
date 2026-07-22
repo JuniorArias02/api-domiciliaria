@@ -69,4 +69,14 @@ class PacienteRepository implements PacienteRepositoryInterface
             ->orderBy('nombre_completo', 'asc')
             ->paginate(perPage: $porPagina, page: $pagina);
     }
+
+    public function buscar(string $query, int $limit = 10)
+    {
+        return Paciente::with(['aseguradora', 'madrina', 'barrio'])
+            ->where('nombre_completo', 'like', '%' . $query . '%')
+            ->orWhere('identificacion', 'like', '%' . $query . '%')
+            ->orderBy('nombre_completo', 'asc')
+            ->limit($limit)
+            ->get();
+    }
 }
